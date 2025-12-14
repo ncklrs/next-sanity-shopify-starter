@@ -1,5 +1,5 @@
 {
-  "name": "next-sanity-embedded-starter",
+  "name": "next-sanity-shopify-starter",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -20,6 +20,7 @@
     "@sanity/assist": "^5.0.2",
     "@sanity/image-url": "^2.0.2",
     "@sanity/vision": "^4.20.3",
+    "@shopify/hydrogen-react": "^2025.7.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.556.0",
@@ -29,11 +30,12 @@
     "react-dom": "19.2.0",
     "react-hook-form": "^7.68.0",
     "sanity": "^4.20.3",
-    "styled-components": "^6.1.14",
     "sanity-plugin-asset-source-unsplash": "^4.0.1",
     "sanity-plugin-media": "^4.1.0",
+    "styled-components": "^6.1.14",
     "tailwind-merge": "^3.4.0",
-    "zod": "^4.1.13"
+    "zod": "^4.1.13",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

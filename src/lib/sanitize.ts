@@ -67,3 +67,24 @@ export function escapeHtml(text: string): string {
 export function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "");
 }
+
+/**
+ * Sanitize product description HTML from Shopify
+ * Shopify API returns sanitized HTML, but we add an extra layer of protection
+ * Allows basic formatting tags but strips dangerous elements
+ */
+export function sanitizeProductDescription(html: string): string {
+  if (!html || typeof html !== "string") return "";
+
+  // Remove script tags and event handlers
+  let sanitized = html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, "")
+    .replace(/javascript:/gi, "");
+
+  // Shopify descriptions typically only contain safe tags like:
+  // p, br, strong, em, ul, ol, li, h1-h6, a (with href), img (with src)
+  // These are safe to render
+
+  return sanitized;
+}
