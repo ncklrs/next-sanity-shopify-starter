@@ -32,6 +32,28 @@ const backgroundColorField = defineField({
   initialValue: "default",
 });
 
+// Shared display overrides for product references
+const productDisplayOverrides = {
+  type: "object",
+  name: "displayOverrides",
+  title: "Display Overrides",
+  description: "Override how this product appears in this context",
+  fields: [
+    defineField({
+      name: "badge",
+      title: "Badge Override",
+      type: "string",
+      description: "Override the default badge (e.g., 'New', 'Sale', 'Bestseller')",
+    }),
+    defineField({
+      name: "ctaText",
+      title: "CTA Text Override",
+      type: "string",
+      description: "Override the default CTA button text",
+    }),
+  ],
+};
+
 // ─────────────────────────────────────────────
 // Product Hero - Full product detail section
 // ─────────────────────────────────────────────
@@ -41,77 +63,18 @@ export const productHero = defineType({
   type: "object",
   fields: [
     defineField({
+      name: "product",
+      title: "Product",
+      type: "reference",
+      to: [{ type: "product" }],
+      description: "Select a product from Sanity (synced from Shopify)",
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: "badge",
-      title: "Badge",
+      title: "Badge Override",
       type: "string",
-      description: "Optional badge text (e.g., 'New', 'Sale', 'Bestseller')",
-    }),
-    defineField({
-      name: "productName",
-      title: "Product Name",
-      type: "string",
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: "description",
-      title: "Description",
-      type: "text",
-      rows: 3,
-    }),
-    defineField({
-      name: "price",
-      title: "Price",
-      type: "string",
-      validation: (Rule) => Rule.required(),
-      description: "e.g., '$99.99' or '99.99'",
-    }),
-    defineField({
-      name: "compareAtPrice",
-      title: "Compare At Price",
-      type: "string",
-      description: "Original price for showing discounts",
-    }),
-    defineField({
-      name: "images",
-      title: "Product Images",
-      type: "array",
-      of: [
-        {
-          type: "image",
-          fields: [
-            defineField({
-              name: "alt",
-              title: "Alt Text",
-              type: "string",
-              validation: (Rule) => Rule.required(),
-            }),
-          ],
-          options: { hotspot: true },
-        },
-      ],
-    }),
-    defineField({
-      name: "variants",
-      title: "Product Variants",
-      type: "array",
-      of: [
-        {
-          type: "object",
-          fields: [
-            defineField({ name: "id", title: "ID", type: "string" }),
-            defineField({ name: "name", title: "Name", type: "string" }),
-            defineField({
-              name: "options",
-              title: "Options",
-              type: "array",
-              of: [{ type: "string" }],
-            }),
-          ],
-          preview: {
-            select: { title: "name" },
-          },
-        },
-      ],
+      description: "Optional badge text override (e.g., 'New', 'Sale', 'Bestseller')",
     }),
     defineField({
       name: "trustBadges",
@@ -128,35 +91,18 @@ export const productHero = defineType({
       ],
     }),
     defineField({
-      name: "rating",
-      title: "Rating",
-      type: "number",
-      validation: (Rule) => Rule.min(0).max(5),
-    }),
-    defineField({
-      name: "reviewCount",
-      title: "Review Count",
-      type: "number",
-    }),
-    defineField({
-      name: "inStock",
-      title: "In Stock",
-      type: "boolean",
-      initialValue: true,
-    }),
-    defineField({
       name: "ctaText",
-      title: "CTA Button Text",
+      title: "CTA Button Text Override",
       type: "string",
-      initialValue: "Add to Cart",
+      description: "Override the default 'Add to Cart' text",
     }),
     spacingField,
     backgroundColorField,
   ],
   preview: {
-    select: { title: "productName" },
-    prepare: ({ title }) => ({
-      title: title || "Product Hero",
+    select: { productTitle: "product.store.title" },
+    prepare: ({ productTitle }) => ({
+      title: productTitle || "Product Hero",
       subtitle: "Product Hero Section",
     }),
   },
@@ -187,35 +133,73 @@ export const productGrid = defineType({
       rows: 2,
     }),
     defineField({
+      name: "source",
+      title: "Product Source",
+      type: "string",
+      options: {
+        list: [
+          { title: "Manual Selection", value: "manual" },
+          { title: "Collection", value: "collection" },
+          { title: "Tag", value: "tag" },
+          { title: "Featured Products", value: "featured" },
+        ],
+      },
+      initialValue: "manual",
+    }),
+    defineField({
       name: "products",
       title: "Products",
       type: "array",
       of: [
         {
           type: "object",
-          name: "product",
+          name: "productWithOverrides",
           fields: [
-            defineField({ name: "name", title: "Name", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "slug", title: "Slug", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "price", title: "Price", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "compareAtPrice", title: "Compare At Price", type: "string" }),
             defineField({
-              name: "image",
-              title: "Image",
-              type: "image",
-              fields: [defineField({ name: "alt", title: "Alt", type: "string" })],
-              options: { hotspot: true },
+              name: "product",
+              title: "Product",
+              type: "reference",
+              to: [{ type: "product" }],
+              validation: (Rule) => Rule.required(),
             }),
-            defineField({ name: "badge", title: "Badge", type: "string" }),
-            defineField({ name: "rating", title: "Rating", type: "number", validation: (Rule) => Rule.min(0).max(5) }),
-            defineField({ name: "reviewCount", title: "Review Count", type: "number" }),
-            defineField({ name: "category", title: "Category", type: "string" }),
+            productDisplayOverrides,
           ],
           preview: {
-            select: { title: "name", subtitle: "price" },
+            select: {
+              title: "product.store.title",
+              price: "product.store.priceRange.minVariantPrice.amount",
+            },
+            prepare: ({ title, price }) => ({
+              title: title || "Select a product",
+              subtitle: price ? `$${price}` : undefined,
+            }),
           },
         },
       ],
+      hidden: ({ parent }) => parent?.source !== "manual" && parent?.source !== undefined,
+    }),
+    defineField({
+      name: "collection",
+      title: "Collection",
+      type: "reference",
+      to: [{ type: "collection" }],
+      description: "Display products from this collection",
+      hidden: ({ parent }) => parent?.source !== "collection",
+    }),
+    defineField({
+      name: "tag",
+      title: "Tag",
+      type: "string",
+      description: "Display products with this tag",
+      hidden: ({ parent }) => parent?.source !== "tag",
+    }),
+    defineField({
+      name: "maxProducts",
+      title: "Max Products",
+      type: "number",
+      description: "Maximum number of products to display (for collection/tag/featured sources)",
+      initialValue: 12,
+      hidden: ({ parent }) => parent?.source === "manual" || parent?.source === undefined,
     }),
     defineField({
       name: "columns",
@@ -246,10 +230,10 @@ export const productGrid = defineType({
     backgroundColorField,
   ],
   preview: {
-    select: { title: "heading" },
-    prepare: ({ title }) => ({
+    select: { title: "heading", source: "source" },
+    prepare: ({ title, source }) => ({
       title: title || "Product Grid",
-      subtitle: "Product Grid Section",
+      subtitle: `Product Grid (${source || "manual"})`,
     }),
   },
 });
@@ -279,34 +263,73 @@ export const productCarousel = defineType({
       rows: 2,
     }),
     defineField({
+      name: "source",
+      title: "Product Source",
+      type: "string",
+      options: {
+        list: [
+          { title: "Manual Selection", value: "manual" },
+          { title: "Collection", value: "collection" },
+          { title: "Tag", value: "tag" },
+          { title: "Featured Products", value: "featured" },
+        ],
+      },
+      initialValue: "manual",
+    }),
+    defineField({
       name: "products",
       title: "Products",
       type: "array",
       of: [
         {
           type: "object",
-          name: "product",
+          name: "productWithOverrides",
           fields: [
-            defineField({ name: "name", title: "Name", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "slug", title: "Slug", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "price", title: "Price", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "compareAtPrice", title: "Compare At Price", type: "string" }),
             defineField({
-              name: "image",
-              title: "Image",
-              type: "image",
-              fields: [defineField({ name: "alt", title: "Alt", type: "string" })],
-              options: { hotspot: true },
+              name: "product",
+              title: "Product",
+              type: "reference",
+              to: [{ type: "product" }],
+              validation: (Rule) => Rule.required(),
             }),
-            defineField({ name: "badge", title: "Badge", type: "string" }),
-            defineField({ name: "rating", title: "Rating", type: "number", validation: (Rule) => Rule.min(0).max(5) }),
-            defineField({ name: "reviewCount", title: "Review Count", type: "number" }),
+            productDisplayOverrides,
           ],
           preview: {
-            select: { title: "name", subtitle: "price" },
+            select: {
+              title: "product.store.title",
+              price: "product.store.priceRange.minVariantPrice.amount",
+            },
+            prepare: ({ title, price }) => ({
+              title: title || "Select a product",
+              subtitle: price ? `$${price}` : undefined,
+            }),
           },
         },
       ],
+      hidden: ({ parent }) => parent?.source !== "manual" && parent?.source !== undefined,
+    }),
+    defineField({
+      name: "collection",
+      title: "Collection",
+      type: "reference",
+      to: [{ type: "collection" }],
+      description: "Display products from this collection",
+      hidden: ({ parent }) => parent?.source !== "collection",
+    }),
+    defineField({
+      name: "tag",
+      title: "Tag",
+      type: "string",
+      description: "Display products with this tag",
+      hidden: ({ parent }) => parent?.source !== "tag",
+    }),
+    defineField({
+      name: "maxProducts",
+      title: "Max Products",
+      type: "number",
+      description: "Maximum number of products to display (for collection/tag/featured sources)",
+      initialValue: 8,
+      hidden: ({ parent }) => parent?.source === "manual" || parent?.source === undefined,
     }),
     defineField({
       name: "autoplay",
@@ -325,10 +348,10 @@ export const productCarousel = defineType({
     backgroundColorField,
   ],
   preview: {
-    select: { title: "heading" },
-    prepare: ({ title }) => ({
+    select: { title: "heading", source: "source" },
+    prepare: ({ title, source }) => ({
       title: title || "Product Carousel",
-      subtitle: "Product Carousel Section",
+      subtitle: `Product Carousel (${source || "manual"})`,
     }),
   },
 });
@@ -342,46 +365,25 @@ export const featuredProduct = defineType({
   type: "object",
   fields: [
     defineField({
-      name: "badge",
-      title: "Badge",
-      type: "string",
-    }),
-    defineField({
-      name: "productName",
-      title: "Product Name",
-      type: "string",
+      name: "product",
+      title: "Product",
+      type: "reference",
+      to: [{ type: "product" }],
+      description: "Select a product from Sanity (synced from Shopify)",
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: "description",
-      title: "Description",
+      name: "badge",
+      title: "Badge Override",
+      type: "string",
+      description: "Override badge text for this placement",
+    }),
+    defineField({
+      name: "descriptionOverride",
+      title: "Description Override",
       type: "text",
       rows: 3,
-    }),
-    defineField({
-      name: "price",
-      title: "Price",
-      type: "string",
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
-      name: "compareAtPrice",
-      title: "Compare At Price",
-      type: "string",
-    }),
-    defineField({
-      name: "image",
-      title: "Product Image",
-      type: "image",
-      fields: [
-        defineField({
-          name: "alt",
-          title: "Alt Text",
-          type: "string",
-          validation: (Rule) => Rule.required(),
-        }),
-      ],
-      options: { hotspot: true },
+      description: "Override the product description for this placement",
     }),
     defineField({
       name: "features",
@@ -398,26 +400,16 @@ export const featuredProduct = defineType({
       ],
     }),
     defineField({
-      name: "rating",
-      title: "Rating",
-      type: "number",
-      validation: (Rule) => Rule.min(0).max(5),
-    }),
-    defineField({
-      name: "reviewCount",
-      title: "Review Count",
-      type: "number",
-    }),
-    defineField({
       name: "ctaText",
-      title: "CTA Text",
+      title: "CTA Text Override",
       type: "string",
-      initialValue: "Shop Now",
+      description: "Override the default 'Shop Now' text",
     }),
     defineField({
       name: "ctaLink",
-      title: "CTA Link",
+      title: "CTA Link Override",
       type: "string",
+      description: "Override the default product link",
     }),
     defineField({
       name: "imagePosition",
@@ -431,19 +423,13 @@ export const featuredProduct = defineType({
       },
       initialValue: "right",
     }),
-    defineField({
-      name: "inStock",
-      title: "In Stock",
-      type: "boolean",
-      initialValue: true,
-    }),
     spacingField,
     backgroundColorField,
   ],
   preview: {
-    select: { title: "productName" },
-    prepare: ({ title }) => ({
-      title: title || "Featured Product",
+    select: { productTitle: "product.store.title" },
+    prepare: ({ productTitle }) => ({
+      title: productTitle || "Featured Product",
       subtitle: "Featured Product Section",
     }),
   },
@@ -480,25 +466,36 @@ export const collectionGrid = defineType({
       of: [
         {
           type: "object",
-          name: "collection",
+          name: "collectionWithOverrides",
           fields: [
-            defineField({ name: "name", title: "Name", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "slug", title: "Slug", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "description", title: "Description", type: "text", rows: 2 }),
             defineField({
-              name: "image",
-              title: "Image",
-              type: "image",
-              fields: [defineField({ name: "alt", title: "Alt", type: "string" })],
-              options: { hotspot: true },
+              name: "collection",
+              title: "Collection",
+              type: "reference",
+              to: [{ type: "collection" }],
+              validation: (Rule) => Rule.required(),
             }),
-            defineField({ name: "productCount", title: "Product Count", type: "number" }),
+            defineField({
+              name: "displayOverrides",
+              title: "Display Overrides",
+              type: "object",
+              fields: [
+                defineField({
+                  name: "descriptionOverride",
+                  title: "Description Override",
+                  type: "text",
+                  rows: 2,
+                  description: "Override the collection description for this placement",
+                }),
+              ],
+            }),
           ],
           preview: {
-            select: { title: "name", subtitle: "productCount" },
-            prepare: ({ title, subtitle }) => ({
-              title,
-              subtitle: subtitle ? `${subtitle} products` : undefined,
+            select: {
+              title: "collection.store.title",
+            },
+            prepare: ({ title }) => ({
+              title: title || "Select a collection",
             }),
           },
         },
@@ -544,33 +541,58 @@ export const relatedProducts = defineType({
       initialValue: "You May Also Like",
     }),
     defineField({
+      name: "source",
+      title: "Product Source",
+      type: "string",
+      options: {
+        list: [
+          { title: "Manual Selection", value: "manual" },
+          { title: "Same Collection", value: "sameCollection" },
+          { title: "Same Tags", value: "sameTags" },
+        ],
+      },
+      initialValue: "manual",
+      description: "'Same Collection' and 'Same Tags' require the product context",
+    }),
+    defineField({
       name: "products",
       title: "Products",
       type: "array",
       of: [
         {
           type: "object",
-          name: "product",
+          name: "productWithOverrides",
           fields: [
-            defineField({ name: "name", title: "Name", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "slug", title: "Slug", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "price", title: "Price", type: "string", validation: (Rule) => Rule.required() }),
-            defineField({ name: "compareAtPrice", title: "Compare At Price", type: "string" }),
             defineField({
-              name: "image",
-              title: "Image",
-              type: "image",
-              fields: [defineField({ name: "alt", title: "Alt", type: "string" })],
-              options: { hotspot: true },
+              name: "product",
+              title: "Product",
+              type: "reference",
+              to: [{ type: "product" }],
+              validation: (Rule) => Rule.required(),
             }),
-            defineField({ name: "badge", title: "Badge", type: "string" }),
-            defineField({ name: "rating", title: "Rating", type: "number", validation: (Rule) => Rule.min(0).max(5) }),
+            productDisplayOverrides,
           ],
           preview: {
-            select: { title: "name", subtitle: "price" },
+            select: {
+              title: "product.store.title",
+              price: "product.store.priceRange.minVariantPrice.amount",
+            },
+            prepare: ({ title, price }) => ({
+              title: title || "Select a product",
+              subtitle: price ? `$${price}` : undefined,
+            }),
           },
         },
       ],
+      hidden: ({ parent }) => parent?.source !== "manual" && parent?.source !== undefined,
+    }),
+    defineField({
+      name: "maxProducts",
+      title: "Max Products",
+      type: "number",
+      description: "Maximum number of related products to display",
+      initialValue: 4,
+      hidden: ({ parent }) => parent?.source === "manual" || parent?.source === undefined,
     }),
     defineField({
       name: "layout",
@@ -588,10 +610,10 @@ export const relatedProducts = defineType({
     backgroundColorField,
   ],
   preview: {
-    select: { title: "heading" },
-    prepare: ({ title }) => ({
+    select: { title: "heading", source: "source" },
+    prepare: ({ title, source }) => ({
       title: title || "Related Products",
-      subtitle: "Related Products Section",
+      subtitle: `Related Products (${source || "manual"})`,
     }),
   },
 });

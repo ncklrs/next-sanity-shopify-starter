@@ -85,6 +85,26 @@ export {
   customerPreferencesQuery,
 } from "./customers";
 
+// Product queries (Sanity-synced Shopify products)
+export {
+  allProductsQuery,
+  productByHandleQuery,
+  productsByHandlesQuery,
+  productsByTypeQuery,
+  productsByTagQuery,
+  featuredProductsQuery,
+  relatedProductsQuery,
+  productCountQuery,
+  allProductHandlesQuery,
+} from "./products";
+
+// Collection queries (Sanity-synced Shopify collections)
+export {
+  allCollectionsQuery,
+  collectionByHandleQuery,
+  allCollectionHandlesQuery,
+} from "./collections";
+
 // Module projections (for custom queries)
 export { moduleProjection, moduleProjections, sharedFields } from "./modules";
 

@@ -1,0 +1,85 @@
+import { defineField, defineType } from "sanity";
+
+export const shopifyCollection = defineType({
+  name: "shopifyCollection",
+  title: "Shopify Collection",
+  type: "object",
+  fields: [
+    defineField({
+      name: "id",
+      title: "ID",
+      type: "number",
+      description: "Shopify collection ID",
+      readOnly: true,
+    }),
+    defineField({
+      name: "gid",
+      title: "Global ID",
+      type: "string",
+      description: "Shopify GraphQL global ID",
+      readOnly: true,
+    }),
+    defineField({
+      name: "title",
+      title: "Title",
+      type: "string",
+      description: "Collection title from Shopify",
+      readOnly: true,
+    }),
+    defineField({
+      name: "slug",
+      title: "Slug",
+      type: "slug",
+      description: "URL-friendly handle from Shopify",
+      readOnly: true,
+    }),
+    defineField({
+      name: "description",
+      title: "Description",
+      type: "text",
+      description: "Plain text description from Shopify",
+      readOnly: true,
+    }),
+    defineField({
+      name: "descriptionHtml",
+      title: "Description HTML",
+      type: "text",
+      description: "HTML description from Shopify",
+      readOnly: true,
+    }),
+    defineField({
+      name: "imageUrl",
+      title: "Image URL",
+      type: "string",
+      description: "URL of the collection's featured image",
+      readOnly: true,
+    }),
+    defineField({
+      name: "sortOrder",
+      title: "Sort Order",
+      type: "string",
+      description: "How products in this collection are sorted",
+      options: {
+        list: [
+          { title: "Best Selling", value: "best-selling" },
+          { title: "Created", value: "created" },
+          { title: "Created (Descending)", value: "created-desc" },
+          { title: "Manual", value: "manual" },
+          { title: "Price (Ascending)", value: "price-asc" },
+          { title: "Price (Descending)", value: "price-desc" },
+          { title: "Title (Ascending)", value: "title-asc" },
+          { title: "Title (Descending)", value: "title-desc" },
+        ],
+      },
+      readOnly: true,
+    }),
+    defineField({
+      name: "isDeleted",
+      title: "Is Deleted",
+      type: "boolean",
+      description: "Whether this collection has been deleted from Shopify",
+      readOnly: true,
+      initialValue: false,
+    }),
+  ],
+});

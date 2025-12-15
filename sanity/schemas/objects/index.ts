@@ -14,3 +14,10 @@ export {
   emailNotificationAction,
   sanityStorageAction,
 } from "./formActions";
+
+// Shopify sync objects
+export {
+  shopifyProduct,
+  shopifyProductVariant,
+  shopifyCollection,
+} from "./shopify";
