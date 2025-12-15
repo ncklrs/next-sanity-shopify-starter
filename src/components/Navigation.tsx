@@ -361,7 +361,7 @@ export function Navigation({ settings }: NavigationProps) {
         </Link>
 
         {/* Desktop Navigation + CTA + Cart */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="nav-desktop">
           <NavigationMenu>
             <NavigationMenuList>
               {navItems.map((item, index) => (
@@ -428,7 +428,7 @@ export function Navigation({ settings }: NavigationProps) {
         </div>
 
         {/* Mobile Cart + Menu Buttons */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="nav-mobile">
           {totalQuantity > 0 && (
             <CartButton onOpen={() => setCartDrawerOpen(true)} />
           )}
