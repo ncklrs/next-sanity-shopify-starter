@@ -1,35 +1,34 @@
 import type { Metadata } from "next";
-import { Outfit, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 import "./globals.css";
+import Providers from "@/components/Providers";
 
-// Outfit - A bold, geometric display font for headings (similar aesthetic to Satoshi)
-const outfit = Outfit({
+// Cormorant Garamond - Editorial serif for headlines
+// Elegant, high-contrast letterforms inspired by Garamond
+// Used by luxury fashion houses for editorial typography
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  variable: "--font-satoshi",
+  variable: "--font-serif",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-// Plus Jakarta Sans - Clean, modern body text
-const jakarta = Plus_Jakarta_Sans({
+// Manrope - Geometric sans-serif for body text
+// Clean, modern, excellent readability at all sizes
+// Pairs beautifully with editorial serifs
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-sans",
   display: "swap",
-});
-
-// JetBrains Mono - Premium monospace for code
-const jetbrains = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
-  display: "swap",
+  weight: ["200", "300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Aurora - Modern SaaS Platform",
-  description: "The next-generation platform for building exceptional digital experiences",
+  title: "MAISON - Curated Luxury",
+  description: "Discover exceptional pieces curated for the discerning eye. Timeless design meets uncompromising quality.",
   openGraph: {
-    title: "Aurora - Modern SaaS Platform",
-    description: "The next-generation platform for building exceptional digital experiences",
+    title: "MAISON - Curated Luxury",
+    description: "Discover exceptional pieces curated for the discerning eye. Timeless design meets uncompromising quality.",
     type: "website",
   },
 };
@@ -40,11 +39,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="light">
       <body
-        className={`${outfit.variable} ${jakarta.variable} ${jetbrains.variable} antialiased`}
+        className={`${cormorant.variable} ${manrope.variable} antialiased`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
