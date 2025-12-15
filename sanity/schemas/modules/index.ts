@@ -124,3 +124,15 @@ export {
   downloadCards,
   multiColumn,
 } from "./utility";
+
+// E-commerce modules
+export {
+  productHero,
+  productGrid,
+  productCarousel,
+  featuredProduct,
+  collectionGrid,
+  relatedProducts,
+  recentlyViewed,
+  trustBadges,
+} from "./ecommerce";

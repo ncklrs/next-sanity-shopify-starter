@@ -21,6 +21,16 @@ import { Tabs, Accordion, Steps, Timeline } from "./modules/Interactive";
 import { AnnouncementBar, Countdown, StickyCta, Modal } from "./modules/Engagement";
 import { Awards, PressMentions, CaseStudyCards, IntegrationGrid } from "./modules/Trust";
 import { Spacer, AnchorPoint, Banner, DownloadCards, MultiColumn } from "./modules/Utility";
+import {
+  ProductHero,
+  ProductGrid,
+  ProductCarousel,
+  FeaturedProduct,
+  CollectionGrid,
+  RelatedProducts,
+  RecentlyViewed,
+  TrustBadges,
+} from "./modules/Ecommerce";
 
 /**
  * Convert a Sanity image object to URL-based format.
@@ -954,6 +964,107 @@ const moduleTransformers: Record<string, (data: any) => any> = {
       })),
     };
   },
+
+  // ─────────────────────────────────────────────
+  // E-commerce Module Transformers
+  // ─────────────────────────────────────────────
+
+  productHero: (data) => ({
+    ...data,
+    images: (data.images || []).map((img: any) => {
+      let src = "";
+      if (img.asset?.url) {
+        src = img.asset.url;
+      } else if (img.asset?._ref) {
+        src = urlFor(img).width(800).url();
+      }
+      return { src, alt: img.alt || "", width: 800, height: 800 };
+    }),
+  }),
+
+  productGrid: (data) => ({
+    ...data,
+    products: (data.products || []).map((p: any) => ({
+      _id: p._key || p.slug,
+      name: p.name,
+      slug: p.slug,
+      price: p.price,
+      compareAtPrice: p.compareAtPrice,
+      image: p.image?.asset?.url
+        ? { src: p.image.asset.url, alt: p.image.alt || p.name }
+        : p.image?.asset?._ref
+        ? { src: urlFor(p.image).width(600).url(), alt: p.image.alt || p.name }
+        : undefined,
+      badge: p.badge,
+      rating: p.rating,
+      reviewCount: p.reviewCount,
+      category: p.category,
+    })),
+  }),
+
+  productCarousel: (data) => ({
+    ...data,
+    products: (data.products || []).map((p: any) => ({
+      _id: p._key || p.slug,
+      name: p.name,
+      slug: p.slug,
+      price: p.price,
+      compareAtPrice: p.compareAtPrice,
+      image: p.image?.asset?.url
+        ? { src: p.image.asset.url, alt: p.image.alt || p.name }
+        : p.image?.asset?._ref
+        ? { src: urlFor(p.image).width(600).url(), alt: p.image.alt || p.name }
+        : undefined,
+      badge: p.badge,
+      rating: p.rating,
+      reviewCount: p.reviewCount,
+    })),
+  }),
+
+  featuredProduct: (data) => ({
+    ...data,
+    image: data.image?.asset?.url
+      ? { src: data.image.asset.url, alt: data.image.alt || data.productName, width: 800, height: 800 }
+      : data.image?.asset?._ref
+      ? { src: urlFor(data.image).width(800).url(), alt: data.image.alt || data.productName, width: 800, height: 800 }
+      : undefined,
+  }),
+
+  collectionGrid: (data) => ({
+    ...data,
+    collections: (data.collections || []).map((c: any) => ({
+      _id: c._key || c.slug,
+      name: c.name,
+      slug: c.slug,
+      description: c.description,
+      image: c.image?.asset?.url
+        ? { src: c.image.asset.url, alt: c.image.alt || c.name }
+        : c.image?.asset?._ref
+        ? { src: urlFor(c.image).width(600).url(), alt: c.image.alt || c.name }
+        : undefined,
+      productCount: c.productCount,
+    })),
+  }),
+
+  relatedProducts: (data) => ({
+    ...data,
+    products: (data.products || []).map((p: any) => ({
+      _id: p._key || p.slug,
+      name: p.name,
+      slug: p.slug,
+      price: p.price,
+      compareAtPrice: p.compareAtPrice,
+      image: p.image?.asset?.url
+        ? { src: p.image.asset.url, alt: p.image.alt || p.name }
+        : p.image?.asset?._ref
+        ? { src: urlFor(p.image).width(600).url(), alt: p.image.alt || p.name }
+        : undefined,
+      badge: p.badge,
+      rating: p.rating,
+    })),
+  }),
+
+  // recentlyViewed and trustBadges don't need transformation - props match
 };
 
 /**
@@ -1055,6 +1166,15 @@ const moduleComponents: Record<string, React.ComponentType<any>> = {
   banner: Banner,
   downloadCards: DownloadCards,
   multiColumn: MultiColumn,
+  // E-commerce
+  productHero: ProductHero,
+  productGrid: ProductGrid,
+  productCarousel: ProductCarousel,
+  featuredProduct: FeaturedProduct,
+  collectionGrid: CollectionGrid,
+  relatedProducts: RelatedProducts,
+  recentlyViewed: RecentlyViewed,
+  trustBadges: TrustBadges,
 };
 
 interface Module {

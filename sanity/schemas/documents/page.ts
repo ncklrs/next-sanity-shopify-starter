@@ -122,6 +122,15 @@ export const page = defineType({
         { type: "banner" },
         { type: "downloadCards" },
         { type: "multiColumn" },
+        // E-commerce
+        { type: "productHero" },
+        { type: "productGrid" },
+        { type: "productCarousel" },
+        { type: "featuredProduct" },
+        { type: "collectionGrid" },
+        { type: "relatedProducts" },
+        { type: "recentlyViewed" },
+        { type: "trustBadges" },
       ],
       components: {
         input: ModulePickerInput,
