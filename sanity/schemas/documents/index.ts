@@ -5,3 +5,5 @@ export { formSubmission } from "./formSubmission";
 export { subscriber } from "./subscriber";
 export { form } from "./form";
 export { engagement } from "./engagement";
+export { customer } from "./customer";
+export { customerAddress } from "./customerAddress";

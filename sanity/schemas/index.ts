@@ -6,6 +6,8 @@ import {
   subscriber,
   form,
   engagement,
+  customer,
+  customerAddress,
 } from "./documents";
 import * as objects from "./objects";
 import * as modules from "./modules";
@@ -19,6 +21,8 @@ export const schemaTypes = [
   subscriber,
   form,
   engagement,
+  customer,
+  customerAddress,
   // Objects
   ...Object.values(objects),
   // Modules

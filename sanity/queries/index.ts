@@ -71,6 +71,20 @@ export {
   engagementByIdQuery,
 } from "./engagement";
 
+// Customer queries
+export {
+  customerByShopifyIdQuery,
+  customerByEmailQuery,
+  customerWishlistQuery,
+  customerRecentlyViewedQuery,
+  customerAddressesQuery,
+  customerAddressByIdQuery,
+  customerCountQuery,
+  recentCustomersQuery,
+  customersWithWishlistQuery,
+  customerPreferencesQuery,
+} from "./customers";
+
 // Module projections (for custom queries)
 export { moduleProjection, moduleProjections, sharedFields } from "./modules";
 
