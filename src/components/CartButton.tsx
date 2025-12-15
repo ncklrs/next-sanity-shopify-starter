@@ -30,34 +30,20 @@ export function CartButton({ onOpen }: CartButtonProps = {}) {
   return (
     <button
       onClick={handleClick}
-      className="relative p-2 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] transition-colors"
+      className="relative p-2 text-[var(--foreground)] hover:text-[var(--gold)] transition-colors duration-300"
       aria-label={`Shopping cart with ${totalQuantity} items`}
     >
-      <ShoppingCartIcon className="w-6 h-6" />
+      <ShoppingCartIcon className="w-5 h-5" />
 
       {totalQuantity > 0 && (
         <span
-          className={`absolute -top-1 -right-1 min-w-[1.25rem] h-5 px-1.5 flex items-center justify-center text-xs font-semibold text-white bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-violet)] rounded-full transition-transform ${
+          className={`absolute -top-1 -right-1 min-w-5 h-5 px-1.5 flex items-center justify-center text-[10px] font-semibold tracking-wide text-[var(--background-paper)] bg-[var(--gold)] transition-transform duration-300 ${
             isAnimating ? "scale-110" : "scale-100"
           }`}
-          style={{
-            animation: isAnimating ? "bounce 300ms ease-out" : "none",
-          }}
         >
           {totalQuantity > 99 ? "99+" : totalQuantity}
         </span>
       )}
-
-      <style jsx>{`
-        @keyframes bounce {
-          0%, 100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.2);
-          }
-        }
-      `}</style>
     </button>
   );
 }

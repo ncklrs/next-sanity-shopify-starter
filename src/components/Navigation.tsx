@@ -6,6 +6,9 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { Button, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui";
 import { MenuIcon, XIcon, AuroraLogo, ChevronDownIcon, ChevronUpIcon, ArrowRightIcon } from "@/components/icons";
+import { CartButton } from "@/components/CartButton";
+import { CartDrawer } from "@/components/CartDrawer";
+import { useCart } from "@/contexts/CartContext";
 import { urlFor } from "@/lib/sanity";
 
 const BUTTON_VARIANT_CLASSES: Record<string, string> = {
@@ -283,7 +286,9 @@ export function Navigation({ settings }: NavigationProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const pathname = usePathname();
+  const { totalQuantity } = useCart();
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -355,8 +360,8 @@ export function Navigation({ settings }: NavigationProps) {
           )}
         </Link>
 
-        {/* Desktop Navigation with Dropdowns */}
-        <div className="hidden md:flex items-center">
+        {/* Desktop Navigation + CTA + Cart */}
+        <div className="hidden md:flex items-center gap-8">
           <NavigationMenu>
             <NavigationMenuList>
               {navItems.map((item, index) => (
@@ -389,41 +394,53 @@ export function Navigation({ settings }: NavigationProps) {
               ))}
             </NavigationMenuList>
           </NavigationMenu>
+
+          {/* CTA Buttons */}
+          {showCta && ctaButtons.length > 0 && (
+            <div className="flex items-center gap-3">
+              {ctaButtons.map((button, index) => (
+                <Link
+                  key={index}
+                  href={getCtaHref(button)}
+                  target={button.openInNewTab ? "_blank" : undefined}
+                  rel={button.openInNewTab ? "noopener noreferrer" : undefined}
+                  className={`${BUTTON_VARIANT_CLASSES[button.variant] || BUTTON_VARIANT_CLASSES.primary} ${BUTTON_SIZE_CLASSES[button.size] || ""}`}
+                >
+                  {button.label}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {showCta && ctaButtons.length === 0 && (
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm">Sign In</Button>
+              <Button size="sm">Get Started</Button>
+            </div>
+          )}
+
+          {/* Cart Button - visible when items in cart */}
+          {totalQuantity > 0 && (
+            <div className="border-l border-[var(--border-light)] pl-4">
+              <CartButton onOpen={() => setCartDrawerOpen(true)} />
+            </div>
+          )}
         </div>
 
-        {/* Desktop CTA Buttons */}
-        {showCta && ctaButtons.length > 0 && (
-          <div className="hidden md:flex items-center gap-3">
-            {ctaButtons.map((button, index) => (
-              <Link
-                key={index}
-                href={getCtaHref(button)}
-                target={button.openInNewTab ? "_blank" : undefined}
-                rel={button.openInNewTab ? "noopener noreferrer" : undefined}
-                className={`${BUTTON_VARIANT_CLASSES[button.variant] || BUTTON_VARIANT_CLASSES.primary} ${BUTTON_SIZE_CLASSES[button.size] || ""}`}
-              >
-                {button.label}
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {showCta && ctaButtons.length === 0 && (
-          <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm">Sign In</Button>
-            <Button size="sm">Get Started</Button>
-          </div>
-        )}
-
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden p-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
-          onClick={toggleMobileMenu}
-          aria-expanded={mobileMenuOpen}
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {mobileMenuOpen ? <XIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
-        </button>
+        {/* Mobile Cart + Menu Buttons */}
+        <div className="flex md:hidden items-center gap-2">
+          {totalQuantity > 0 && (
+            <CartButton onOpen={() => setCartDrawerOpen(true)} />
+          )}
+          <button
+            className="p-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            onClick={toggleMobileMenu}
+            aria-expanded={mobileMenuOpen}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {mobileMenuOpen ? <XIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu with Submenu Support */}
@@ -571,6 +588,9 @@ export function Navigation({ settings }: NavigationProps) {
           </div>
         </div>
       )}
+
+      {/* Cart Drawer */}
+      <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
     </nav>
   );
 }
