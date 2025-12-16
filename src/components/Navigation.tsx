@@ -413,7 +413,7 @@ export function Navigation({ settings }: NavigationProps) {
                     <NavigationMenuLink asChild>
                       <Link
                         href={getNavHref(item)}
-                        className={`${navigationMenuTriggerStyle()} ${isActiveLink(item) ? "text-[var(--foreground)] bg-[var(--surface)]/50" : ""}`}
+                        className={`nav-link px-4 py-2 ${isActiveLink(item) ? "text-[var(--foreground)]" : ""}`}
                         target={item.linkType === "external" ? "_blank" : undefined}
                       >
                         {item.label}
