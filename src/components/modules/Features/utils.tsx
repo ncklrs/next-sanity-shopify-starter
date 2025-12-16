@@ -8,15 +8,21 @@ const iconNameMap: Record<string, string> = {
   "shopping-cart": "shoppingCart",
   shoppingcart: "shoppingCart",
 
-  // Navigation
+  // Navigation (camelCase from picker gets lowercased)
   "arrow-right": "arrowRight",
   "arrow-left": "arrowLeft",
+  arrowright: "arrowRight",
+  arrowleft: "arrowLeft",
   "chevron-right": "chevronRight",
   "chevron-left": "chevronLeft",
   "chevron-down": "chevronDown",
   "chevron-up": "chevronUp",
+  chevronright: "chevronRight",
+  chevronleft: "chevronLeft",
+  chevrondown: "chevronDown",
+  chevronup: "chevronUp",
 
-  // Common variations
+  // Common variations (camelCase from picker gets lowercased)
   "bar-chart": "barChart",
   barchart: "barChart",
   chart: "barChart",
@@ -24,12 +30,17 @@ const iconNameMap: Record<string, string> = {
   filetext: "fileText",
   document: "fileText",
   "help-circle": "helpCircle",
+  helpcircle: "helpCircle",
   help: "helpCircle",
   "message-square": "messageSquare",
+  messagesquare: "messageSquare",
   message: "messageSquare",
   chat: "messageSquare",
   "mouse-pointer": "mousePointer",
+  mousepointer: "mousePointer",
   cursor: "mousePointer",
+  creditcard: "creditCard",
+  "credit-card": "creditCard",
 
   // Lucide naming to our naming
   layouttemplate: "grid",
@@ -41,7 +52,7 @@ const iconNameMap: Record<string, string> = {
   filecode: "code",
   "file-code": "code",
 
-  // Direct mappings (already correct but lowercase)
+  // Direct mappings (single word - already correct)
   sparkles: "sparkles",
   heart: "heart",
   rocket: "rocket",
@@ -63,8 +74,6 @@ const iconNameMap: Record<string, string> = {
   award: "award",
   bell: "bell",
   building: "building",
-  creditcard: "creditCard",
-  "credit-card": "creditCard",
   database: "database",
   grid: "grid",
   image: "image",
