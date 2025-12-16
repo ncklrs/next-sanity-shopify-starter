@@ -72,7 +72,8 @@ function sanityImageToUrl(image: any): { src: string; alt: string; width: number
 const SKIP_TRANSFORM_KEYS = new Set([
   'values', 'featureValues', 'content', 'rows', 'columns',
   'options', 'fields', 'steps', 'categories', '_type', '_key', '_ref',
-  'tabs', 'items', 'events' // Interactive module arrays
+  'tabs', 'items', 'events', // Interactive module arrays
+  'mentions', 'caseStudies', 'integrations' // Trust module arrays (use urlFor() in components)
 ]);
 
 /**
@@ -966,6 +967,68 @@ const moduleTransformers: Record<string, (data: any) => any> = {
       })),
     };
   },
+
+  // ─────────────────────────────────────────────
+  // Media Module Transformers
+  // ─────────────────────────────────────────────
+
+  videoEmbed: (data) => ({
+    ...data,
+    // Extract URL from image object for posterImage
+    posterImage: data.poster?.asset?.url ||
+      (data.poster?.asset?._ref ? urlFor(data.poster).width(1200).url() : undefined),
+  }),
+
+  beforeAfter: (data) => ({
+    ...data,
+    // Extract URLs from image objects
+    beforeImage: data.beforeImage?.asset?.url ||
+      (data.beforeImage?.asset?._ref ? urlFor(data.beforeImage).width(1200).url() : undefined),
+    afterImage: data.afterImage?.asset?.url ||
+      (data.afterImage?.asset?._ref ? urlFor(data.afterImage).width(1200).url() : undefined),
+  }),
+
+  // ─────────────────────────────────────────────
+  // Trust Module Transformers
+  // ─────────────────────────────────────────────
+
+  awards: (data) => ({
+    ...data,
+    // Map items with image URLs for urlFor() usage in component
+    items: (data.items || []).map((item: any) => ({
+      ...item,
+      // Keep raw Sanity image for urlFor() in component
+      image: item.image,
+    })),
+  }),
+
+  pressMentions: (data) => ({
+    ...data,
+    mentions: (data.mentions || []).map((mention: any) => ({
+      ...mention,
+      // Keep raw Sanity image for urlFor() in component
+      logo: mention.logo,
+    })),
+  }),
+
+  caseStudyCards: (data) => ({
+    ...data,
+    caseStudies: (data.caseStudies || []).map((cs: any) => ({
+      ...cs,
+      // Keep raw Sanity images for urlFor() in component
+      image: cs.image,
+      logo: cs.logo,
+    })),
+  }),
+
+  integrationGrid: (data) => ({
+    ...data,
+    integrations: (data.integrations || []).map((integration: any) => ({
+      ...integration,
+      // Keep raw Sanity image for urlFor() in component
+      logo: integration.logo,
+    })),
+  }),
 
   // ─────────────────────────────────────────────
   // E-commerce Module Transformers

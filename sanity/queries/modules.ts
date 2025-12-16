@@ -766,19 +766,21 @@ const formDynamicProjection = `{
 }`;
 
 // Trust module projections
+// Field names must match schema: items[], name, image, etc.
 const awardsProjection = `{
   _type,
   _key,
-  badge,
-  heading,
-  headingHighlight,
-  subheading,
-  awards[]{
-    title,
+  title,
+  subtitle,
+  items[]{
+    name,
     organization,
     year,
-    image${imageFields}
+    image${imageFields},
+    link
   },
+  variant,
+  columns,
   spacing,
   backgroundColor
 }`;
@@ -786,16 +788,14 @@ const awardsProjection = `{
 const pressMentionsProjection = `{
   _type,
   _key,
-  badge,
-  heading,
-  headingHighlight,
-  subheading,
+  title,
   mentions[]{
-    publication,
+    name,
     quote,
     logo${imageFields},
-    url
+    link
   },
+  variant,
   spacing,
   backgroundColor
 }`;
@@ -803,17 +803,19 @@ const pressMentionsProjection = `{
 const caseStudyCardsProjection = `{
   _type,
   _key,
-  badge,
-  heading,
-  headingHighlight,
-  subheading,
+  title,
+  subtitle,
   caseStudies[]{
     title,
-    description,
+    company,
+    logo${imageFields},
     image${imageFields},
-    stats[]{ value, label },
+    excerpt,
+    metric{ value, label },
     link
   },
+  variant,
+  columns,
   spacing,
   backgroundColor
 }`;
@@ -821,16 +823,21 @@ const caseStudyCardsProjection = `{
 const integrationGridProjection = `{
   _type,
   _key,
-  badge,
-  heading,
-  headingHighlight,
-  subheading,
+  title,
+  subtitle,
+  categories[]{
+    name,
+    integrations[]
+  },
   integrations[]{
     name,
     description,
-    icon${imageFields},
-    url
+    logo${imageFields},
+    category,
+    link,
+    featured
   },
+  variant,
   columns,
   spacing,
   backgroundColor
