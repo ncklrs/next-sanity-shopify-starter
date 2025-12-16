@@ -44,6 +44,8 @@ interface Product {
   rating?: number;
   reviewCount?: number;
   availableForSale?: boolean;
+  /** Shopify variant ID for add-to-cart (e.g., "gid://shopify/ProductVariant/123") */
+  firstVariantId?: string;
 }
 
 interface ProductCarouselProps {
@@ -155,7 +157,12 @@ function ProductCard({ product, onAddToCart, isPriority = false }: {
             variant="secondary"
             size="sm"
             className="w-full"
-            onClick={() => onAddToCart?.(product._id)}
+            onClick={() => {
+              if (product.firstVariantId) {
+                onAddToCart?.(product.firstVariantId);
+              }
+            }}
+            disabled={!product.firstVariantId || isOutOfStock}
             leftIcon={<ShoppingCartIcon className="w-4 h-4" />}
           >
             Add to Cart

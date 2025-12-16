@@ -42,6 +42,8 @@ interface Product {
   badge?: string;
   rating?: number;
   availableForSale?: boolean;
+  /** Shopify variant ID for add-to-cart (e.g., "gid://shopify/ProductVariant/123") */
+  firstVariantId?: string;
 }
 
 interface RelatedProductsProps {
@@ -143,7 +145,12 @@ function ProductCard({
             variant="outline"
             size="sm"
             className="w-full text-xs"
-            onClick={() => onAddToCart?.(product._id)}
+            onClick={() => {
+              if (product.firstVariantId) {
+                onAddToCart?.(product.firstVariantId);
+              }
+            }}
+            disabled={!product.firstVariantId || isOutOfStock}
             leftIcon={<ShoppingCartIcon className="w-3 h-3" />}
           >
             Add to Cart

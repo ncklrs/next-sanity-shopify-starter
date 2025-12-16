@@ -1171,6 +1171,7 @@ const multiColumnProjection = `{
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Shared product card projection (for dereferencing products)
+// Includes firstVariantId for quick add-to-cart functionality
 const productCardFields = `{
   _key,
   "name": store.title,
@@ -1180,7 +1181,8 @@ const productCardFields = `{
   "image": { "src": store.previewImageUrl, "alt": store.title },
   "category": store.productType,
   "availableForSale": store.status == "active" && !store.isDeleted,
-  "tags": store.tags
+  "tags": store.tags,
+  "firstVariantId": store.variants[0]->store.gid
 }`;
 
 // Product Hero - Full product detail section
@@ -1230,7 +1232,8 @@ const productGridProjection = `{
       "image": { "src": product->store.previewImageUrl, "alt": product->store.title },
       "category": product->store.productType,
       "availableForSale": product->store.status == "active" && !product->store.isDeleted,
-      "badge": displayOverrides.badge
+      "badge": displayOverrides.badge,
+      "firstVariantId": product->store.variants[0]->store.gid
     },
     // Collection source - fetch up to 24, let component limit based on maxProducts
     source == "collection" => *[_type == "product" && references(^.collection._ref) && !store.isDeleted && store.status == "active"][0...24]${productCardFields},
@@ -1264,7 +1267,8 @@ const productCarouselProjection = `{
       "compareAtPrice": product->store.priceRange.maxVariantPrice,
       "image": { "src": product->store.previewImageUrl, "alt": product->store.title },
       "availableForSale": product->store.status == "active" && !product->store.isDeleted,
-      "badge": displayOverrides.badge
+      "badge": displayOverrides.badge,
+      "firstVariantId": product->store.variants[0]->store.gid
     },
     // Collection source - fetch up to 16, let component limit based on maxProducts
     source == "collection" => *[_type == "product" && references(^.collection._ref) && !store.isDeleted && store.status == "active"][0...16]${productCardFields},
@@ -1335,7 +1339,8 @@ const relatedProductsProjection = `{
       "compareAtPrice": product->store.priceRange.maxVariantPrice,
       "image": { "src": product->store.previewImageUrl, "alt": product->store.title },
       "availableForSale": product->store.status == "active" && !product->store.isDeleted,
-      "badge": displayOverrides.badge
+      "badge": displayOverrides.badge,
+      "firstVariantId": product->store.variants[0]->store.gid
     },
     // For sameCollection/sameTags, these require context from the current product page
     // The component will handle fetching based on current product context

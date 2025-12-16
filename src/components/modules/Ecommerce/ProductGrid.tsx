@@ -45,6 +45,8 @@ interface Product {
   reviewCount?: number;
   category?: string;
   availableForSale?: boolean;
+  /** Shopify variant ID for add-to-cart (e.g., "gid://shopify/ProductVariant/123") */
+  firstVariantId?: string;
 }
 
 interface ProductGridProps {
@@ -126,8 +128,11 @@ function ProductCard({ product, onAddToCart, isPriority = false }: {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              onAddToCart?.(product._id);
+              if (product.firstVariantId) {
+                onAddToCart?.(product.firstVariantId);
+              }
             }}
+            disabled={!product.firstVariantId || isOutOfStock}
             leftIcon={<ShoppingCartIcon className="w-4 h-4" />}
           >
             Add to Cart

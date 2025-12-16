@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { urlFor } from "@/lib/sanity";
+import { useCart } from "@/contexts/CartContext";
 import { ModuleErrorBoundary } from "./ModuleErrorBoundary";
 import { HeroDefault, HeroCentered, HeroSplit, HeroVideo, HeroMinimal } from "./modules/Hero";
 import { FeaturesGrid, FeaturesAlternating, FeaturesIconCards } from "./modules/Features";
@@ -1006,6 +1007,8 @@ const moduleTransformers: Record<string, (data: any) => any> = {
       reviewCount: p.reviewCount,
       category: p.category,
       availableForSale: p.availableForSale,
+      // Shopify variant ID for add-to-cart functionality
+      firstVariantId: p.firstVariantId,
     })),
   }),
 
@@ -1023,6 +1026,8 @@ const moduleTransformers: Record<string, (data: any) => any> = {
       rating: p.rating,
       reviewCount: p.reviewCount,
       availableForSale: p.availableForSale,
+      // Shopify variant ID for add-to-cart functionality
+      firstVariantId: p.firstVariantId,
     })),
   }),
 
@@ -1060,6 +1065,8 @@ const moduleTransformers: Record<string, (data: any) => any> = {
       badge: p.badge,
       rating: p.rating,
       availableForSale: p.availableForSale,
+      // Shopify variant ID for add-to-cart functionality
+      firstVariantId: p.firstVariantId,
     })),
   }),
 
@@ -1201,7 +1208,32 @@ interface ModuleRendererProps {
   modules: Module[];
 }
 
+// E-commerce module types that support add to cart functionality
+const ECOMMERCE_MODULES_WITH_CART = new Set([
+  "productGrid",
+  "productCarousel",
+  "relatedProducts",
+]);
+
 export function ModuleRenderer({ modules }: ModuleRendererProps) {
+  const { addItem } = useCart();
+
+  // Handler for add to cart - receives the Shopify variant ID
+  const handleAddToCart = useCallback(
+    async (variantId: string) => {
+      if (!variantId) {
+        console.warn("Cannot add to cart: no variant ID provided");
+        return;
+      }
+      try {
+        await addItem(variantId, 1);
+      } catch (error) {
+        console.error("Failed to add item to cart:", error);
+      }
+    },
+    [addItem]
+  );
+
   // Memoize transformed modules to prevent re-computation on every render
   const transformedModules = useMemo(() => {
     if (!modules || modules.length === 0) return [];
@@ -1226,10 +1258,15 @@ export function ModuleRenderer({ modules }: ModuleRendererProps) {
           return null;
         }
 
+        // Add onAddToCart handler to ecommerce modules
+        const props = ECOMMERCE_MODULES_WITH_CART.has(_type)
+          ? { ...data, onAddToCart: handleAddToCart }
+          : data;
+
         // Wrap each module in error boundary for graceful degradation
         return (
           <ModuleErrorBoundary key={_key} moduleType={_type} moduleKey={_key}>
-            <Component {...data} />
+            <Component {...props} />
           </ModuleErrorBoundary>
         );
       })}
