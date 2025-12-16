@@ -1281,6 +1281,7 @@ const featuredProductProjection = `{
   _key,
   badge,
   "productName": product->store.title,
+  "productSlug": product->store.slug.current,
   "description": coalesce(descriptionOverride, product->store.description),
   "price": product->store.priceRange.minVariantPrice,
   "compareAtPrice": product->store.priceRange.maxVariantPrice,
@@ -1295,6 +1296,7 @@ const featuredProductProjection = `{
 }`;
 
 // Collection Grid - Display product collections
+// Note: productCount is not available via GROQ as Shopify sync doesn't include collection membership
 const collectionGridProjection = `{
   _type,
   _key,
@@ -1309,8 +1311,7 @@ const collectionGridProjection = `{
     "name": collection->store.title,
     "slug": collection->store.slug.current,
     "description": coalesce(displayOverrides.descriptionOverride, collection->store.descriptionHtml),
-    "image": { "src": collection->store.imageUrl, "alt": collection->store.title },
-    "productCount": count(*[_type == "product" && references(^.collection._ref) && !store.isDeleted])
+    "image": { "src": collection->store.imageUrl, "alt": collection->store.title }
   }
 }`;
 

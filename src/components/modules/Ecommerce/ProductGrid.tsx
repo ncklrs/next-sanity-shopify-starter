@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import { HeartIcon, ShoppingCartIcon, StarIcon } from "@/components/icons";
@@ -61,10 +62,9 @@ interface ProductGridProps {
 }
 
 // Product Card Component
-function ProductCard({ product, onAddToCart, onClick, isPriority = false }: {
+function ProductCard({ product, onAddToCart, isPriority = false }: {
   product: Product;
   onAddToCart?: (productId: string) => void;
-  onClick?: (product: Product) => void;
   isPriority?: boolean;
 }) {
   const hasDiscount = product.compareAtPrice && Number(product.compareAtPrice) > Number(product.price);
@@ -72,14 +72,12 @@ function ProductCard({ product, onAddToCart, onClick, isPriority = false }: {
     ? Math.round(((Number(product.compareAtPrice) - Number(product.price)) / Number(product.compareAtPrice)) * 100)
     : 0;
   const isOutOfStock = product.availableForSale === false;
+  const productUrl = `/products/${product.slug}`;
 
   return (
     <div className="group relative bg-[var(--surface)] rounded-2xl border border-[var(--border)] overflow-hidden transition-all duration-300 hover:border-[var(--border-hover)] hover:shadow-2xl hover:-translate-y-1">
       {/* Product Image */}
-      <div
-        className="relative aspect-square overflow-hidden cursor-pointer"
-        onClick={() => onClick?.(product)}
-      >
+      <Link href={productUrl} className="relative aspect-square overflow-hidden block">
         {product.image ? (
           <Image
             src={product.image.src}
@@ -118,6 +116,7 @@ function ProductCard({ product, onAddToCart, onClick, isPriority = false }: {
             variant="secondary"
             size="sm"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               onAddToCart?.(product._id);
             }}
@@ -128,12 +127,15 @@ function ProductCard({ product, onAddToCart, onClick, isPriority = false }: {
           <Button
             variant="ghost"
             size="sm"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
             <HeartIcon className="w-5 h-5" />
           </Button>
         </div>
-      </div>
+      </Link>
 
       {/* Product Details */}
       <div className="p-5">
@@ -143,12 +145,11 @@ function ProductCard({ product, onAddToCart, onClick, isPriority = false }: {
           </p>
         )}
 
-        <h3
-          className="heading-sm mb-2 cursor-pointer hover:text-[var(--accent-cyan)] transition-colors"
-          onClick={() => onClick?.(product)}
-        >
-          {product.name}
-        </h3>
+        <Link href={productUrl}>
+          <h3 className="heading-sm mb-2 hover:text-[var(--accent-cyan)] transition-colors">
+            {product.name}
+          </h3>
+        </Link>
 
         {/* Rating */}
         {product.rating !== undefined && (
@@ -271,7 +272,6 @@ export function ProductGrid({
                   key={product._id}
                   product={product}
                   onAddToCart={onAddToCart}
-                  onClick={onProductClick}
                   isPriority={index === 0}
                 />
               ))}

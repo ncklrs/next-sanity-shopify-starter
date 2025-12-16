@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import { ArrowRightIcon } from "@/components/icons";
 
@@ -52,15 +53,15 @@ interface CollectionGridProps {
 
 function CollectionCard({
   collection,
-  onClick,
 }: {
   collection: Collection;
-  onClick?: (collection: Collection) => void;
 }) {
+  const collectionUrl = `/collections/${collection.slug}`;
+
   return (
-    <div
-      className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] transition-all duration-300 hover:border-[var(--border-hover)] hover:shadow-2xl hover:-translate-y-1 cursor-pointer"
-      onClick={() => onClick?.(collection)}
+    <Link
+      href={collectionUrl}
+      className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] transition-all duration-300 hover:border-[var(--border-hover)] hover:shadow-2xl hover:-translate-y-1 block"
     >
       {/* Collection Image */}
       <div className="relative aspect-[4/3] overflow-hidden">
@@ -93,13 +94,7 @@ function CollectionCard({
             </p>
           )}
 
-          <div className="flex items-center justify-between">
-            {collection.productCount !== undefined && (
-              <span className="text-white/90 text-sm">
-                {collection.productCount} {collection.productCount === 1 ? "product" : "products"}
-              </span>
-            )}
-
+          <div className="flex items-center justify-end">
             <div className="flex items-center gap-2 text-white group-hover:text-[var(--accent-cyan)] transition-colors">
               <span className="text-sm font-medium">Shop Collection</span>
               <ArrowRightIcon className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
@@ -107,7 +102,7 @@ function CollectionCard({
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -161,7 +156,6 @@ export function CollectionGrid({
             <CollectionCard
               key={collection._id}
               collection={collection}
-              onClick={onCollectionClick}
             />
           ))}
         </div>

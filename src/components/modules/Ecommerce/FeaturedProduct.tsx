@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import { CheckIcon, ShoppingCartIcon, StarIcon, ArrowRightIcon } from "@/components/icons";
@@ -34,6 +35,7 @@ interface Feature {
 interface FeaturedProductProps {
   badge?: string;
   productName: string;
+  productSlug?: string;
   description?: string;
   price: string | number;
   compareAtPrice?: string | number;
@@ -58,6 +60,7 @@ interface FeaturedProductProps {
 export function FeaturedProduct({
   badge,
   productName,
+  productSlug,
   description,
   price,
   compareAtPrice,
@@ -73,6 +76,8 @@ export function FeaturedProduct({
   backgroundColor,
   onCTAClick,
 }: FeaturedProductProps) {
+  // Determine the link - prefer ctaLink, fallback to product page
+  const productUrl = ctaLink || (productSlug ? `/products/${productSlug}` : undefined);
   const spacingMap = {
     sm: "py-12 px-4",
     md: "py-16 px-6",
@@ -176,16 +181,30 @@ export function FeaturedProduct({
               </div>
 
               {/* CTA Button */}
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={onCTAClick}
-                disabled={!inStock}
-                leftIcon={<ShoppingCartIcon className="w-5 h-5" />}
-                rightIcon={<ArrowRightIcon className="w-4 h-4" />}
-              >
-                {ctaText}
-              </Button>
+              {productUrl ? (
+                <Link href={productUrl}>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    disabled={!inStock}
+                    leftIcon={<ShoppingCartIcon className="w-5 h-5" />}
+                    rightIcon={<ArrowRightIcon className="w-4 h-4" />}
+                  >
+                    {ctaText}
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={onCTAClick}
+                  disabled={!inStock}
+                  leftIcon={<ShoppingCartIcon className="w-5 h-5" />}
+                  rightIcon={<ArrowRightIcon className="w-4 h-4" />}
+                >
+                  {ctaText}
+                </Button>
+              )}
             </div>
 
             {/* Product Image */}
