@@ -43,6 +43,7 @@ interface Product {
   rating?: number;
   reviewCount?: number;
   category?: string;
+  availableForSale?: boolean;
 }
 
 interface ProductGridProps {
@@ -60,15 +61,17 @@ interface ProductGridProps {
 }
 
 // Product Card Component
-function ProductCard({ product, onAddToCart, onClick }: {
+function ProductCard({ product, onAddToCart, onClick, isPriority = false }: {
   product: Product;
   onAddToCart?: (productId: string) => void;
   onClick?: (product: Product) => void;
+  isPriority?: boolean;
 }) {
   const hasDiscount = product.compareAtPrice && Number(product.compareAtPrice) > Number(product.price);
   const discountPercent = hasDiscount
     ? Math.round(((Number(product.compareAtPrice) - Number(product.price)) / Number(product.compareAtPrice)) * 100)
     : 0;
+  const isOutOfStock = product.availableForSale === false;
 
   return (
     <div className="group relative bg-[var(--surface)] rounded-2xl border border-[var(--border)] overflow-hidden transition-all duration-300 hover:border-[var(--border-hover)] hover:shadow-2xl hover:-translate-y-1">
@@ -84,6 +87,7 @@ function ProductCard({ product, onAddToCart, onClick }: {
             width={product.image.width || 600}
             height={product.image.height || 600}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            priority={isPriority}
           />
         ) : (
           <div className="w-full h-full bg-[var(--surface-elevated)] flex items-center justify-center">
@@ -92,11 +96,16 @@ function ProductCard({ product, onAddToCart, onClick }: {
         )}
 
         {/* Badges */}
-        {product.badge && (
-          <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {product.badge && (
             <Badge variant="gradient">{product.badge}</Badge>
-          </div>
-        )}
+          )}
+          {isOutOfStock && (
+            <span className="px-2 py-1 text-xs font-semibold uppercase tracking-wide bg-[var(--foreground-muted)] text-white rounded">
+              Out of Stock
+            </span>
+          )}
+        </div>
         {hasDiscount && (
           <div className="absolute top-3 right-3">
             <Badge variant="success">-{discountPercent}%</Badge>
@@ -257,12 +266,13 @@ export function ProductGrid({
         <div className={`grid ${columnMap[columns]} gap-8`}>
           {isLoading
             ? [...Array(productsPerPage)].map((_, i) => <ProductSkeleton key={i} />)
-            : currentProducts.map((product) => (
+            : currentProducts.map((product, index) => (
                 <ProductCard
                   key={product._id}
                   product={product}
                   onAddToCart={onAddToCart}
                   onClick={onProductClick}
+                  isPriority={index === 0}
                 />
               ))}
         </div>

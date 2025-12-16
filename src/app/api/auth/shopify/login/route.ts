@@ -24,6 +24,12 @@ export async function GET(request: NextRequest) {
     // Generate authorization URL with PKCE
     const { url, state } = await getAuthorizationUrl(returnTo);
 
+    // Debug logging
+    console.log("=== LOGIN DEBUG ===");
+    console.log("Authorization URL:", url);
+    console.log("NEXT_PUBLIC_APP_URL:", process.env.NEXT_PUBLIC_APP_URL);
+    console.log("===================");
+
     // Store the state (including code verifier) in an encrypted cookie
     const cookieStore = await cookies();
     cookieStore.set(

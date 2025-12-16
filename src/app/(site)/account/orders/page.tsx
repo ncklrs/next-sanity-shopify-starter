@@ -2,7 +2,55 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Package, ChevronRight, Loader2, ExternalLink } from "lucide-react";
+import {
+  Package,
+  ChevronDown,
+  ChevronUp,
+  Truck,
+  MapPin,
+  CreditCard,
+} from "lucide-react";
+
+interface Money {
+  amount: string;
+  currencyCode: string;
+}
+
+interface LineItem {
+  id: string;
+  title: string;
+  quantity: number;
+  price: Money;
+  totalPrice: Money;
+  image?: string;
+}
+
+interface TrackingInfo {
+  company: string | null;
+  number: string | null;
+  url: string | null;
+}
+
+interface Fulfillment {
+  id: string;
+  status: string;
+  createdAt: string;
+  estimatedDeliveryAt: string | null;
+  latestShipmentStatus: string | null;
+  tracking: TrackingInfo[];
+}
+
+interface Address {
+  name: string;
+  company: string | null;
+  address1: string | null;
+  address2: string | null;
+  city: string | null;
+  zone: string | null;
+  zip: string | null;
+  phone: string | null;
+  formatted: string[];
+}
 
 interface Order {
   id: string;
@@ -11,16 +59,14 @@ interface Order {
   processedAt: string;
   financialStatus: string;
   fulfillmentStatus: string;
-  totalPrice: {
-    amount: string;
-    currencyCode: string;
-  };
-  statusUrl: string;
-  lineItems: Array<{
-    title: string;
-    quantity: number;
-    image?: string;
-  }>;
+  totalPrice: Money;
+  subtotal: Money;
+  totalTax: Money;
+  totalShipping: Money;
+  shippingAddress: Address | null;
+  billingAddress: Address | null;
+  fulfillments: Fulfillment[];
+  lineItems: LineItem[];
 }
 
 interface OrdersResponse {
@@ -33,7 +79,7 @@ interface OrdersResponse {
 
 /**
  * Orders Page
- * Shows paginated list of customer orders with status
+ * Shows paginated list of customer orders with full details
  */
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -44,24 +90,18 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async (cursor?: string) => {
-    try {
-      const url = cursor
-        ? `/api/customer/orders?cursor=${cursor}`
-        : "/api/customer/orders";
-      const res = await fetch(url);
+    const url = cursor
+      ? `/api/customer/orders?cursor=${cursor}`
+      : "/api/customer/orders";
+    const res = await fetch(url);
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch orders");
-      }
-
-      const data: OrdersResponse = await res.json();
-      return data;
-    } catch (err) {
-      throw err;
+    if (!res.ok) {
+      throw new Error("Failed to fetch orders");
     }
+
+    return res.json() as Promise<OrdersResponse>;
   }, []);
 
-  // Initial load
   useEffect(() => {
     async function loadOrders() {
       try {
@@ -79,7 +119,6 @@ export default function OrdersPage() {
     loadOrders();
   }, [fetchOrders]);
 
-  // Load more orders
   const loadMore = async () => {
     if (!endCursor || loadingMore) return;
 
@@ -99,18 +138,18 @@ export default function OrdersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--foreground)] border-t-transparent" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-lg bg-red-50 p-6 text-center">
-        <p className="text-red-800">{error}</p>
+      <div className="border border-[var(--accent-red)] bg-red-50 p-6 text-center">
+        <p className="text-[var(--accent-red)]">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 text-sm font-medium text-red-600 hover:text-red-700"
+          className="mt-4 text-sm font-medium text-[var(--accent-red)] underline hover:no-underline"
         >
           Try again
         </button>
@@ -119,26 +158,23 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Order History</h1>
-        <p className="mt-1 text-gray-600">
-          View and track your orders
-        </p>
+        <h1 className="display-md">Order History</h1>
+        <p className="mt-2 text-[var(--foreground-muted)]">View and track your orders</p>
       </div>
 
       {orders.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <Package className="mx-auto h-12 w-12 text-gray-300" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No orders yet</h3>
-          <p className="mt-2 text-gray-500">
-            When you place orders, they'll appear here.
+        <div className="border border-dashed border-[var(--border-light)] bg-[var(--surface)] py-16 text-center">
+          <Package className="mx-auto h-12 w-12 text-[var(--foreground-muted)] opacity-40" />
+          <h3 className="mt-4 font-serif text-lg text-[var(--foreground)]">
+            No orders yet
+          </h3>
+          <p className="mt-2 text-[var(--foreground-muted)]">
+            When you place orders, they&apos;ll appear here.
           </p>
-          <Link
-            href="/products"
-            className="mt-6 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-          >
-            Start shopping
+          <Link href="/products" className="btn btn-primary mt-6">
+            Start Shopping
           </Link>
         </div>
       ) : (
@@ -154,16 +190,9 @@ export default function OrdersPage() {
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
-                className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="btn btn-secondary"
               >
-                {loadingMore ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  "Load more orders"
-                )}
+                {loadingMore ? "Loading..." : "Load More Orders"}
               </button>
             </div>
           )}
@@ -174,80 +203,249 @@ export default function OrdersPage() {
 }
 
 /**
- * Order Card Component
+ * Expandable Order Card Component
  */
 function OrderCard({ order }: { order: Order }) {
-  const formattedDate = new Date(order.processedAt).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const [expanded, setExpanded] = useState(false);
 
-  const formattedTotal = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: order.totalPrice.currencyCode,
-  }).format(parseFloat(order.totalPrice.amount));
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+  const formatMoney = (money: Money) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: money.currencyCode,
+    }).format(parseFloat(money.amount));
+
+  const formatStatus = (status: string) =>
+    status
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/^\w/, (c) => c.toUpperCase());
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white">
-      {/* Order Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 px-6 py-4">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <div>
-            <p className="text-sm text-gray-500">Order number</p>
-            <p className="font-medium text-gray-900">{order.name}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Date placed</p>
-            <p className="font-medium text-gray-900">{formattedDate}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Total</p>
-            <p className="font-medium text-gray-900">{formattedTotal}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <StatusBadge status={order.fulfillmentStatus} type="fulfillment" />
-          <a
-            href={order.statusUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700"
-          >
-            View details
-            <ExternalLink className="ml-1 h-4 w-4" />
-          </a>
-        </div>
-      </div>
-
-      {/* Order Items */}
-      <div className="divide-y divide-gray-200 px-6">
-        {order.lineItems.slice(0, 3).map((item, index) => (
-          <div key={index} className="flex items-center gap-4 py-4">
-            {item.image ? (
-              <img
-                src={item.image}
-                alt={item.title}
-                className="h-16 w-16 rounded-lg object-cover"
-              />
-            ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
-                <Package className="h-6 w-6 text-gray-400" />
-              </div>
-            )}
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">{item.title}</p>
-              <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+    <div className="border border-[var(--border-light)] bg-[var(--surface)] overflow-hidden">
+      {/* Order Header - Always Visible */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full text-left"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-4 px-6 py-5 hover:bg-[var(--background-warm)] transition-colors duration-300">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+            <div>
+              <p className="text-xs uppercase tracking-wider text-[var(--foreground-muted)]">Order</p>
+              <p className="font-medium text-[var(--foreground)]">{order.name}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider text-[var(--foreground-muted)]">Date</p>
+              <p className="font-medium text-[var(--foreground)]">
+                {formatDate(order.processedAt)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider text-[var(--foreground-muted)]">Total</p>
+              <p className="font-medium text-[var(--foreground)]">
+                {formatMoney(order.totalPrice)}
+              </p>
             </div>
           </div>
+
+          <div className="flex items-center gap-4">
+            <StatusBadge status={order.fulfillmentStatus} />
+            <StatusBadge status={order.financialStatus} variant="financial" />
+            {expanded ? (
+              <ChevronUp className="h-5 w-5 text-[var(--foreground-muted)]" />
+            ) : (
+              <ChevronDown className="h-5 w-5 text-[var(--foreground-muted)]" />
+            )}
+          </div>
+        </div>
+      </button>
+
+      {/* Expanded Details */}
+      {expanded && (
+        <div className="border-t border-[var(--border-light)]">
+          {/* Line Items */}
+          <div className="px-6 py-6">
+            <h4 className="text-xs uppercase tracking-wider text-[var(--foreground-muted)] mb-4">Items</h4>
+            <div className="space-y-4">
+              {order.lineItems.map((item) => (
+                <div key={item.id} className="flex items-start gap-4">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="h-16 w-16 object-cover bg-[var(--background-warm)]"
+                    />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center bg-[var(--background-warm)]">
+                      <Package className="h-6 w-6 text-[var(--foreground-muted)]" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-[var(--foreground)] truncate">
+                      {item.title}
+                    </p>
+                    <p className="text-sm text-[var(--foreground-muted)]">
+                      Qty: {item.quantity} × {formatMoney(item.price)}
+                    </p>
+                  </div>
+                  <p className="font-medium text-[var(--foreground)]">
+                    {formatMoney(item.totalPrice)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Order Summary */}
+          <div className="border-t border-[var(--border-light)] px-6 py-6 bg-[var(--background-warm)]">
+            <div className="max-w-xs ml-auto space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-[var(--foreground-muted)]">Subtotal</span>
+                <span className="text-[var(--foreground)]">
+                  {formatMoney(order.subtotal)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[var(--foreground-muted)]">Shipping</span>
+                <span className="text-[var(--foreground)]">
+                  {formatMoney(order.totalShipping)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[var(--foreground-muted)]">Tax</span>
+                <span className="text-[var(--foreground)]">
+                  {formatMoney(order.totalTax)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm font-medium pt-2 border-t border-[var(--border-light)]">
+                <span className="text-[var(--foreground)]">Total</span>
+                <span className="text-[var(--foreground)]">
+                  {formatMoney(order.totalPrice)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Fulfillment & Tracking */}
+          {order.fulfillments.length > 0 && (
+            <div className="border-t border-[var(--border-light)] px-6 py-6">
+              <h4 className="text-xs uppercase tracking-wider text-[var(--foreground-muted)] mb-4 flex items-center gap-2">
+                <Truck className="h-4 w-4" />
+                Shipping & Tracking
+              </h4>
+              <div className="space-y-4">
+                {order.fulfillments.map((fulfillment) => (
+                  <div
+                    key={fulfillment.id}
+                    className="border border-[var(--border-light)] p-4"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <StatusBadge status={fulfillment.status} />
+                      {fulfillment.latestShipmentStatus && (
+                        <span className="text-sm text-[var(--foreground-muted)]">
+                          {formatStatus(fulfillment.latestShipmentStatus)}
+                        </span>
+                      )}
+                    </div>
+                    {fulfillment.estimatedDeliveryAt && (
+                      <p className="text-sm text-[var(--foreground-muted)] mb-2">
+                        Estimated delivery:{" "}
+                        {formatDate(fulfillment.estimatedDeliveryAt)}
+                      </p>
+                    )}
+                    {fulfillment.tracking.length > 0 && (
+                      <div className="space-y-2">
+                        {fulfillment.tracking.map((track, idx) => (
+                          <div key={idx} className="text-sm">
+                            {track.company && (
+                              <span className="text-[var(--foreground-muted)]">
+                                {track.company}:{" "}
+                              </span>
+                            )}
+                            {track.url ? (
+                              <a
+                                href={track.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[var(--foreground)] underline hover:no-underline"
+                              >
+                                {track.number || "Track package"}
+                              </a>
+                            ) : (
+                              <span className="text-[var(--foreground)]">
+                                {track.number}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Addresses */}
+          <div className="border-t border-[var(--border-light)] px-6 py-6">
+            <div className="grid gap-8 sm:grid-cols-2">
+              {order.shippingAddress && (
+                <div>
+                  <h4 className="text-xs uppercase tracking-wider text-[var(--foreground-muted)] mb-3 flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Shipping Address
+                  </h4>
+                  <AddressDisplay address={order.shippingAddress} />
+                </div>
+              )}
+              {order.billingAddress && (
+                <div>
+                  <h4 className="text-xs uppercase tracking-wider text-[var(--foreground-muted)] mb-3 flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    Billing Address
+                  </h4>
+                  <AddressDisplay address={order.billingAddress} />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Address Display Component
+ */
+function AddressDisplay({ address }: { address: Address }) {
+  // Use formatted array if available, otherwise build from parts
+  if (address.formatted && address.formatted.length > 0) {
+    return (
+      <div className="text-sm text-[var(--foreground-muted)] space-y-0.5">
+        {address.formatted.map((line, idx) => (
+          <p key={idx}>{line}</p>
         ))}
-        {order.lineItems.length > 3 && (
-          <p className="py-4 text-sm text-gray-500">
-            + {order.lineItems.length - 3} more items
-          </p>
-        )}
       </div>
+    );
+  }
+
+  return (
+    <div className="text-sm text-[var(--foreground-muted)] space-y-0.5">
+      {address.name && <p className="font-medium text-[var(--foreground)]">{address.name}</p>}
+      {address.company && <p>{address.company}</p>}
+      {address.address1 && <p>{address.address1}</p>}
+      {address.address2 && <p>{address.address2}</p>}
+      <p>
+        {[address.city, address.zone, address.zip].filter(Boolean).join(", ")}
+      </p>
+      {address.phone && <p>{address.phone}</p>}
     </div>
   );
 }
@@ -257,33 +455,46 @@ function OrderCard({ order }: { order: Order }) {
  */
 function StatusBadge({
   status,
-  type,
+  variant = "fulfillment",
 }: {
   status: string;
-  type: "fulfillment" | "financial";
+  variant?: "fulfillment" | "financial";
 }) {
   const getStatusStyle = () => {
     const statusLower = status.toLowerCase();
 
-    if (statusLower.includes("fulfilled") || statusLower === "paid") {
-      return "bg-green-100 text-green-800";
+    if (
+      statusLower.includes("fulfilled") ||
+      statusLower === "paid" ||
+      statusLower === "success"
+    ) {
+      return "bg-green-50 text-green-800 border-green-200";
     }
-    if (statusLower.includes("pending") || statusLower === "unfulfilled") {
-      return "bg-yellow-100 text-yellow-800";
+    if (
+      statusLower.includes("pending") ||
+      statusLower === "unfulfilled" ||
+      statusLower === "authorized"
+    ) {
+      return "bg-amber-50 text-amber-800 border-amber-200";
     }
     if (statusLower.includes("cancel") || statusLower.includes("refund")) {
-      return "bg-red-100 text-red-800";
+      return "bg-red-50 text-red-800 border-red-200";
     }
-    return "bg-gray-100 text-gray-800";
+    if (statusLower.includes("progress")) {
+      return "bg-blue-50 text-blue-800 border-blue-200";
+    }
+    return "bg-[var(--background-warm)] text-[var(--foreground)] border-[var(--border-light)]";
   };
 
-  const formatStatus = (s: string) => {
-    return s.replace(/_/g, " ").toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
-  };
+  const formatStatus = (s: string) =>
+    s
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/^\w/, (c) => c.toUpperCase());
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusStyle()}`}
+      className={`inline-flex items-center border px-2.5 py-0.5 text-xs font-medium ${getStatusStyle()}`}
     >
       {formatStatus(status)}
     </span>

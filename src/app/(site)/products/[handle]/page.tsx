@@ -7,6 +7,14 @@ import {
   getRelatedProducts,
   formatPrice,
 } from "@/lib/shopify";
+import { getShopSettings, getSanityProductByHandle } from "@/lib/sanity";
+import ProductVariantSelector from "@/components/ProductVariantSelector";
+import { WishlistButton } from "@/components/WishlistButton";
+import { ModuleRenderer } from "@/components/ModuleRenderer";
+
+// Route segment config - ISR revalidation
+export const revalidate = 3600; // Revalidate every hour
+export const dynamicParams = true; // Allow params not in generateStaticParams
 
 export async function generateStaticParams() {
   if (!process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ||
@@ -39,9 +47,27 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
   const { handle } = await params;
 
   try {
-    const product = await getProductByHandle(handle);
+    // Fetch Shopify product, shop settings, and Sanity product data (with modules) in parallel
+    const [product, shopSettings, sanityProduct] = await Promise.all([
+      getProductByHandle(handle),
+      getShopSettings(),
+      getSanityProductByHandle(handle),
+    ]);
     if (!product) notFound();
 
+    // Check if product has modules configured in Sanity
+    const hasModules = sanityProduct?.modules && sanityProduct.modules.length > 0;
+
+    // If modules exist, render them instead of the default layout
+    if (hasModules) {
+      return (
+        <main className="min-h-screen">
+          <ModuleRenderer modules={sanityProduct.modules || []} />
+        </main>
+      );
+    }
+
+    // Default product layout (when no modules are configured)
     const relatedProducts = await getRelatedProducts(
       product.id,
       product.productType,
@@ -49,7 +75,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
       4
     ).catch(() => []);
 
-    const minPrice = product.priceRange.minVariantPrice;
+    const variants = product.variants.edges.map((e) => e.node);
 
     return (
       <main className="min-h-screen">
@@ -63,6 +89,7 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
                       src={product.featuredImage.url}
                       alt={product.featuredImage.altText || product.title}
                       fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
                       className="object-cover"
                       priority
                     />
@@ -75,13 +102,22 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
                   <span>/</span>
                   <span>{product.title}</span>
                 </nav>
-                <h1 className="display-md">{product.title}</h1>
-                <div className="text-3xl font-bold">
-                  {formatPrice(minPrice.amount, minPrice.currencyCode)}
+                <div className="flex items-start justify-between gap-4">
+                  <h1 className="display-md">{product.title}</h1>
+                  <WishlistButton
+                    productHandle={handle}
+                    className="mt-1 bg-[var(--surface)] hover:bg-[var(--background-muted)]"
+                  />
                 </div>
-                <button className="btn btn-primary w-full" disabled={!product.availableForSale}>
-                  {product.availableForSale ? "Add to Cart" : "Sold Out"}
-                </button>
+                {variants.length > 0 && (
+                  <ProductVariantSelector
+                    variants={variants}
+                    options={product.options}
+                    availableForSale={product.availableForSale}
+                    showBuyNowButton={shopSettings?.showBuyNowButton ?? false}
+                    buyNowButtonText={shopSettings?.buyNowButtonText ?? "Buy Now"}
+                  />
+                )}
                 <div className="pt-6 border-t border-[var(--border)]">
                   <h2 className="heading-md mb-4">Description</h2>
                   <p className="text-[var(--foreground-muted)]">{product.description}</p>
@@ -105,8 +141,16 @@ export default async function ProductPage({ params }: { params: Promise<{ handle
                             src={p.featuredImage.url}
                             alt={p.featuredImage.altText || p.title}
                             fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
                           />
+                          {!p.availableForSale && (
+                            <div className="absolute top-3 left-3">
+                              <span className="px-2 py-1 text-xs font-semibold uppercase tracking-wide bg-[var(--foreground-muted)] text-white rounded">
+                                Out of Stock
+                              </span>
+                            </div>
+                          )}
                         </div>
                       )}
                       <div className="p-4">

@@ -3,6 +3,10 @@
 
 @import "tailwindcss";
 
+/* Force source detection for all component files */
+@source "../components/**/*.tsx";
+@source "./**/*.tsx";
+
 /* ═══════════════════════════════════════════════════════════════════════════
    MAISON - Editorial Luxury E-Commerce Design System
    Inspired by Celine, The Row, Bottega Veneta
@@ -685,29 +689,7 @@ a {
   justify-content: space-between;
 }
 
-/* Desktop nav - hidden on mobile */
-.nav-desktop {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .nav-desktop {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-  }
-
-  .nav-mobile {
-    display: none !important;
-  }
-}
-
-/* Mobile nav - shown on mobile only */
-.nav-mobile {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+/* Responsive nav classes moved to @layer utilities at end of file */
 
 .nav-logo {
   font-family: 'Cormorant Garamond', Georgia, serif;
@@ -2798,4 +2780,27 @@ a {
 
 .lightbox-close:hover {
   border-color: white;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   RESPONSIVE NAV UTILITIES - Explicit rules to ensure proper display
+   ───────────────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .nav-show-desktop {
+    display: none !important;
+  }
+
+  .nav-show-mobile {
+    display: flex !important;
+  }
+
+  @media (min-width: 768px) {
+    .nav-show-desktop {
+      display: flex !important;
+    }
+
+    .nav-show-mobile {
+      display: none !important;
+    }
+  }
 }

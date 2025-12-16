@@ -37,6 +37,7 @@ interface Product {
     width?: number;
     height?: number;
   };
+  availableForSale?: boolean;
 }
 
 interface RecentlyViewedProps {
@@ -58,6 +59,8 @@ function ProductCard({
   onAddToCart?: (productId: string) => void;
   onClick?: (product: Product) => void;
 }) {
+  const isOutOfStock = product.availableForSale === false;
+
   return (
     <div className="flex-shrink-0 w-56 group">
       <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] overflow-hidden transition-all duration-300 hover:border-[var(--border-hover)] hover:shadow-lg">
@@ -77,6 +80,15 @@ function ProductCard({
           ) : (
             <div className="w-full h-full bg-[var(--surface-elevated)] flex items-center justify-center">
               <span className="text-[var(--foreground-muted)] text-xs">No image</span>
+            </div>
+          )}
+
+          {/* Out of Stock Badge */}
+          {isOutOfStock && (
+            <div className="absolute top-2 left-2">
+              <span className="px-2 py-1 text-xs font-semibold uppercase tracking-wide bg-[var(--foreground-muted)] text-white rounded">
+                Out of Stock
+              </span>
             </div>
           )}
         </div>

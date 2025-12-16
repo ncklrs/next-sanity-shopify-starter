@@ -15,36 +15,30 @@ import type {
   CustomerUpdateInput,
   AddressInput,
   CustomerQueryResponse,
-  CustomerUpdateResponse,
-  AddressCreateResponse,
-  AddressUpdateResponse,
-  AddressDeleteResponse,
 } from "./customer-types";
 
 // ============================================================================
 // Customer Queries
 // ============================================================================
 
+// Customer Account API has different fields than Admin/Storefront APIs
 const CUSTOMER_FRAGMENT = `
   fragment CustomerFields on Customer {
     id
-    email
+    emailAddress {
+      emailAddress
+    }
     firstName
     lastName
     displayName
-    phone
-    acceptsMarketing
-    createdAt
-    updatedAt
-    numberOfOrders
-    emailMarketingConsent {
-      marketingState
-      marketingOptInLevel
-      consentUpdatedAt
+    phoneNumber {
+      phoneNumber
     }
   }
 `;
 
+// Customer Account API address fields
+// Note: CustomerAddress uses different field names than MailingAddress
 const ADDRESS_FRAGMENT = `
   fragment AddressFields on CustomerAddress {
     id
@@ -54,77 +48,75 @@ const ADDRESS_FRAGMENT = `
     address1
     address2
     city
-    province
-    provinceCode
-    country
-    countryCodeV2
+    zoneCode
     zip
-    phone
+    phoneNumber
     formatted
-    formattedArea
   }
 `;
 
+// Customer Account API Order fragment
+// Note: Field names differ significantly from Storefront/Admin APIs
 const ORDER_FRAGMENT = `
   fragment OrderFields on Order {
     id
     name
-    orderNumber
+    number
     processedAt
     financialStatus
-    fulfillmentStatus
-    currentTotalPrice {
+    fulfillments(first: 10) {
+      edges {
+        node {
+          id
+          status
+          createdAt
+          updatedAt
+          latestShipmentStatus
+          estimatedDeliveryAt
+          trackingInformation {
+            company
+            number
+            url
+          }
+        }
+      }
+    }
+    totalPrice {
       amount
       currencyCode
     }
-    currentSubtotalPrice {
+    subtotal {
       amount
       currencyCode
     }
-    currentTotalTax {
+    totalTax {
       amount
       currencyCode
     }
-    totalShippingPrice {
+    totalShipping {
       amount
       currencyCode
     }
-    statusUrl
-    canceledAt
-    cancelReason
     lineItems(first: 50) {
       edges {
         node {
+          id
           title
           quantity
-          originalTotalPrice {
+          price {
             amount
             currencyCode
           }
-          discountedTotalPrice {
+          totalPrice {
             amount
             currencyCode
           }
-          variant {
+          image {
             id
-            title
-            price {
-              amount
-              currencyCode
-            }
-            sku
-            image {
-              id
-              url
-              altText
-              width
-              height
-            }
-            product {
-              id
-              handle
-              title
-            }
+            url
+            altText
+            width
+            height
           }
         }
       }
@@ -133,13 +125,6 @@ const ORDER_FRAGMENT = `
         hasPreviousPage
         startCursor
         endCursor
-      }
-    }
-    fulfillments {
-      trackingCompany
-      trackingInfo {
-        number
-        url
       }
     }
     shippingAddress {
@@ -203,10 +188,9 @@ const UPDATE_CUSTOMER_MUTATION = `
       customer {
         ...CustomerFields
       }
-      customerUserErrors {
+      userErrors {
         field
         message
-        code
       }
     }
   }
@@ -216,14 +200,15 @@ export async function updateCustomer(
   accessToken: string,
   input: CustomerUpdateInput
 ): Promise<ShopifyCustomer | null> {
-  const data = await customerApiRequest<CustomerUpdateResponse>(
-    accessToken,
-    UPDATE_CUSTOMER_MUTATION,
-    { input }
-  );
+  const data = await customerApiRequest<{
+    customerUpdate: {
+      customer: ShopifyCustomer | null;
+      userErrors: Array<{ field: string[]; message: string }>;
+    };
+  }>(accessToken, UPDATE_CUSTOMER_MUTATION, { input });
 
-  if (data.customerUpdate.customerUserErrors.length > 0) {
-    const error = data.customerUpdate.customerUserErrors[0];
+  if (data.customerUpdate.userErrors.length > 0) {
+    const error = data.customerUpdate.userErrors[0];
     throw new Error(`Customer update failed: ${error.message}`);
   }
 
@@ -368,10 +353,9 @@ const CREATE_ADDRESS_MUTATION = `
       customerAddress {
         ...AddressFields
       }
-      customerUserErrors {
+      userErrors {
         field
         message
-        code
       }
     }
   }
@@ -381,14 +365,15 @@ export async function createAddress(
   accessToken: string,
   address: AddressInput
 ): Promise<ShopifyAddress> {
-  const data = await customerApiRequest<AddressCreateResponse>(
-    accessToken,
-    CREATE_ADDRESS_MUTATION,
-    { address }
-  );
+  const data = await customerApiRequest<{
+    customerAddressCreate: {
+      customerAddress: ShopifyAddress | null;
+      userErrors: Array<{ field: string[]; message: string }>;
+    };
+  }>(accessToken, CREATE_ADDRESS_MUTATION, { address });
 
-  if (data.customerAddressCreate.customerUserErrors.length > 0) {
-    const error = data.customerAddressCreate.customerUserErrors[0];
+  if (data.customerAddressCreate.userErrors.length > 0) {
+    const error = data.customerAddressCreate.userErrors[0];
     throw new Error(`Address creation failed: ${error.message}`);
   }
 
@@ -411,10 +396,9 @@ const UPDATE_ADDRESS_MUTATION = `
       customerAddress {
         ...AddressFields
       }
-      customerUserErrors {
+      userErrors {
         field
         message
-        code
       }
     }
   }
@@ -425,14 +409,15 @@ export async function updateAddress(
   addressId: string,
   address: AddressInput
 ): Promise<ShopifyAddress> {
-  const data = await customerApiRequest<AddressUpdateResponse>(
-    accessToken,
-    UPDATE_ADDRESS_MUTATION,
-    { id: addressId, address }
-  );
+  const data = await customerApiRequest<{
+    customerAddressUpdate: {
+      customerAddress: ShopifyAddress | null;
+      userErrors: Array<{ field: string[]; message: string }>;
+    };
+  }>(accessToken, UPDATE_ADDRESS_MUTATION, { id: addressId, address });
 
-  if (data.customerAddressUpdate.customerUserErrors.length > 0) {
-    const error = data.customerAddressUpdate.customerUserErrors[0];
+  if (data.customerAddressUpdate.userErrors.length > 0) {
+    const error = data.customerAddressUpdate.userErrors[0];
     throw new Error(`Address update failed: ${error.message}`);
   }
 
@@ -451,10 +436,9 @@ const DELETE_ADDRESS_MUTATION = `
   mutation DeleteAddress($id: ID!) {
     customerAddressDelete(id: $id) {
       deletedCustomerAddressId
-      customerUserErrors {
+      userErrors {
         field
         message
-        code
       }
     }
   }
@@ -464,14 +448,15 @@ export async function deleteAddress(
   accessToken: string,
   addressId: string
 ): Promise<string> {
-  const data = await customerApiRequest<AddressDeleteResponse>(
-    accessToken,
-    DELETE_ADDRESS_MUTATION,
-    { id: addressId }
-  );
+  const data = await customerApiRequest<{
+    customerAddressDelete: {
+      deletedCustomerAddressId: string | null;
+      userErrors: Array<{ field: string[]; message: string }>;
+    };
+  }>(accessToken, DELETE_ADDRESS_MUTATION, { id: addressId });
 
-  if (data.customerAddressDelete.customerUserErrors.length > 0) {
-    const error = data.customerAddressDelete.customerUserErrors[0];
+  if (data.customerAddressDelete.userErrors.length > 0) {
+    const error = data.customerAddressDelete.userErrors[0];
     throw new Error(`Address deletion failed: ${error.message}`);
   }
 
@@ -496,10 +481,9 @@ const SET_DEFAULT_ADDRESS_MUTATION = `
           ...AddressFields
         }
       }
-      customerUserErrors {
+      userErrors {
         field
         message
-        code
       }
     }
   }
@@ -512,12 +496,12 @@ export async function setDefaultAddress(
   const data = await customerApiRequest<{
     customerDefaultAddressUpdate: {
       customer: { defaultAddress: ShopifyAddress | null };
-      customerUserErrors: Array<{ field: string[]; message: string; code: string }>;
+      userErrors: Array<{ field: string[]; message: string }>;
     };
   }>(accessToken, SET_DEFAULT_ADDRESS_MUTATION, { id: addressId });
 
-  if (data.customerDefaultAddressUpdate.customerUserErrors.length > 0) {
-    const error = data.customerDefaultAddressUpdate.customerUserErrors[0];
+  if (data.customerDefaultAddressUpdate.userErrors.length > 0) {
+    const error = data.customerDefaultAddressUpdate.userErrors[0];
     throw new Error(`Set default address failed: ${error.message}`);
   }
 

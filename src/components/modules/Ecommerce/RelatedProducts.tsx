@@ -41,6 +41,7 @@ interface Product {
   };
   badge?: string;
   rating?: number;
+  availableForSale?: boolean;
 }
 
 interface RelatedProductsProps {
@@ -63,6 +64,7 @@ function ProductCard({
   onClick?: (product: Product) => void;
 }) {
   const hasDiscount = product.compareAtPrice && Number(product.compareAtPrice) > Number(product.price);
+  const isOutOfStock = product.availableForSale === false;
 
   return (
     <div className="flex-shrink-0 w-64 group">
@@ -86,11 +88,17 @@ function ProductCard({
             </div>
           )}
 
-          {product.badge && (
-            <div className="absolute top-2 left-2">
+          {/* Badges */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {product.badge && (
               <Badge variant="gradient" className="text-xs">{product.badge}</Badge>
-            </div>
-          )}
+            )}
+            {isOutOfStock && (
+              <span className="px-2 py-1 text-xs font-semibold uppercase tracking-wide bg-[var(--foreground-muted)] text-white rounded">
+                Out of Stock
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Product Details */}

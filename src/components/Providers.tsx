@@ -6,6 +6,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { QuickViewProvider } from "@/contexts/QuickViewContext";
 import ProductQuickView from "@/components/ProductQuickView";
+import { FloatingCart } from "@/components/FloatingCart";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -15,6 +16,7 @@ export function Providers({ children }: { children: ReactNode }) {
           <QuickViewProvider>
             {children}
             <ProductQuickView />
+            <FloatingCart />
           </QuickViewProvider>
         </WishlistProvider>
       </CartProvider>

@@ -132,6 +132,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                   src={urlFor(post.featuredImage).width(1200).height(675).url()}
                   alt={post.featuredImage.alt || post.title}
                   fill
+                  sizes="(max-width: 768px) 100vw, 800px"
                   className="object-cover"
                   priority
                 />

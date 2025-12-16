@@ -136,3 +136,6 @@ export {
   recentlyViewed,
   trustBadges,
 } from "./ecommerce";
+
+// Account modules
+export { accountLogin } from "./account";

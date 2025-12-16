@@ -183,3 +183,35 @@ export const socialLinksQuery = `*[_type == "siteSettings"][0]{
     url
   }
 }`;
+
+// ============================================================================
+// Shop Settings Queries
+// ============================================================================
+
+/**
+ * Fetch shop settings for product display configuration
+ * Uses specific document ID to ensure we get the singleton instance
+ */
+export const shopSettingsQuery = `*[_id == "shopSettings"][0]{
+  // Product Display
+  showOutOfStockBadge,
+  showSaleBadge,
+  showQuickAdd,
+  // Cart & Checkout
+  showBuyNowButton,
+  buyNowButtonText,
+  // Filters & Sorting
+  showFilters,
+  filterOptions,
+  showSorting,
+  sortOptions,
+  defaultSort
+}`;
+
+/**
+ * Fetch handles of products marked as hidden in Sanity
+ * Used to filter out hidden products from catalog views
+ */
+export const hiddenProductHandlesQuery = `*[_type == "product" && hidden == true]{
+  "handle": store.slug.current
+}.handle`;

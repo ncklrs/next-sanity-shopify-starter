@@ -31,6 +31,7 @@ import {
   RecentlyViewed,
   TrustBadges,
 } from "./modules/Ecommerce";
+import { AccountLogin } from "./modules/Account";
 
 /**
  * Convert a Sanity image object to URL-based format.
@@ -1065,6 +1066,19 @@ const moduleTransformers: Record<string, (data: any) => any> = {
   }),
 
   // recentlyViewed and trustBadges don't need transformation - props match
+
+  // ─────────────────────────────────────────────
+  // Account Module Transformers
+  // ─────────────────────────────────────────────
+
+  "account.login": (data) => ({
+    ...data,
+    image: data.image?.asset?.url
+      ? { src: data.image.asset.url, alt: data.image.alt || "Login illustration" }
+      : data.image?.asset?._ref
+      ? { src: urlFor(data.image).width(800).url(), alt: data.image.alt || "Login illustration" }
+      : undefined,
+  }),
 };
 
 /**
@@ -1175,6 +1189,8 @@ const moduleComponents: Record<string, React.ComponentType<any>> = {
   relatedProducts: RelatedProducts,
   recentlyViewed: RecentlyViewed,
   trustBadges: TrustBadges,
+  // Account
+  "account.login": AccountLogin,
 };
 
 interface Module {

@@ -20,6 +20,8 @@ import {
 } from "./pages";
 import {
   siteSettingsQuery,
+  shopSettingsQuery,
+  hiddenProductHandlesQuery,
 } from "./settings";
 import {
   allPostsQuery,
@@ -32,6 +34,8 @@ import {
   engagementsForBlogQuery,
 } from "./engagement";
 import { homepageReferenceQuery } from "./settings";
+import { productByHandleQuery } from "./products";
+import { collectionByHandleQuery } from "./collections";
 
 // =============================================================================
 // Type Definitions
@@ -117,6 +121,22 @@ export interface SiteSettings {
     bottomLinks?: any[];
     copyrightText?: string;
   };
+}
+
+export interface ShopSettings {
+  // Product Display
+  showOutOfStockBadge?: boolean;
+  showSaleBadge?: boolean;
+  showQuickAdd?: boolean;
+  // Cart & Checkout
+  showBuyNowButton?: boolean;
+  buyNowButtonText?: string;
+  // Filters & Sorting
+  showFilters?: boolean;
+  filterOptions?: string[];
+  showSorting?: boolean;
+  sortOptions?: string[];
+  defaultSort?: string;
 }
 
 export interface EngagementData {
@@ -205,6 +225,27 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
   return sanityFetch<SiteSettings | null>({
     query: siteSettingsQuery,
     tags: ["site-settings"],
+  });
+}
+
+/**
+ * Fetch shop settings for product display configuration
+ */
+export async function getShopSettings(): Promise<ShopSettings | null> {
+  return sanityFetch<ShopSettings | null>({
+    query: shopSettingsQuery,
+    tags: ["shop-settings"],
+  });
+}
+
+/**
+ * Fetch handles of products marked as hidden in Sanity
+ * Used to filter out hidden products from catalog views
+ */
+export async function getHiddenProductHandles(): Promise<string[]> {
+  return sanityFetch<string[]>({
+    query: hiddenProductHandlesQuery,
+    tags: ["products"],
   });
 }
 
@@ -380,4 +421,55 @@ export async function getBlogLayoutData(): Promise<{
     settings: settings ?? undefined,
     engagements: engagements ?? [],
   };
+}
+
+// =============================================================================
+// Product & Collection Fetchers (Sanity data with modules)
+// =============================================================================
+
+export interface SanityProductData {
+  _id: string;
+  _type: string;
+  title: string;
+  handle: string;
+  description?: string;
+  body?: any[];
+  seo?: SeoData;
+  modules?: any[];
+}
+
+export interface SanityCollectionData {
+  _id: string;
+  _type: string;
+  title: string;
+  handle: string;
+  description?: string;
+  image?: string;
+  body?: any[];
+  seo?: SeoData;
+  modules?: any[];
+}
+
+/**
+ * Fetch Sanity product data by handle (includes modules)
+ * Use this to get CMS-managed content for product pages
+ */
+export async function getSanityProductByHandle(handle: string): Promise<SanityProductData | null> {
+  return sanityFetch<SanityProductData | null>({
+    query: productByHandleQuery,
+    params: { handle },
+    tags: ["products", `product:${handle}`],
+  });
+}
+
+/**
+ * Fetch Sanity collection data by handle (includes modules)
+ * Use this to get CMS-managed content for collection pages
+ */
+export async function getSanityCollectionByHandle(handle: string): Promise<SanityCollectionData | null> {
+  return sanityFetch<SanityCollectionData | null>({
+    query: collectionByHandleQuery,
+    params: { handle },
+    tags: ["collections", `collection:${handle}`],
+  });
 }

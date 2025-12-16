@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { User } from "lucide-react";
 import { Button, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui";
 import { MenuIcon, XIcon, AuroraLogo, ChevronDownIcon, ChevronUpIcon, ArrowRightIcon } from "@/components/icons";
 import { CartButton } from "@/components/CartButton";
 import { CartDrawer } from "@/components/CartDrawer";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { urlFor } from "@/lib/sanity";
 
 const BUTTON_VARIANT_CLASSES: Record<string, string> = {
@@ -289,6 +291,7 @@ export function Navigation({ settings }: NavigationProps) {
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const pathname = usePathname();
   const { totalQuantity } = useCart();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -361,7 +364,7 @@ export function Navigation({ settings }: NavigationProps) {
         </Link>
 
         {/* Desktop Navigation + CTA + Cart */}
-        <div className="nav-desktop">
+        <div className="nav-show-desktop items-center gap-8">
           <NavigationMenu>
             <NavigationMenuList>
               {navItems.map((item, index) => (
@@ -412,12 +415,16 @@ export function Navigation({ settings }: NavigationProps) {
             </div>
           )}
 
-          {showCta && ctaButtons.length === 0 && (
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm">Sign In</Button>
-              <Button size="sm">Get Started</Button>
-            </div>
-          )}
+          {/* Account/Login Button */}
+          <Link
+            href={isAuthenticated ? "/account" : "/account/login"}
+            className="flex items-center gap-2 text-sm font-medium text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors"
+          >
+            <User className="h-5 w-5" />
+            <span className={authLoading ? "opacity-50" : ""}>
+              {isAuthenticated ? "My Account" : "Login"}
+            </span>
+          </Link>
 
           {/* Cart Button - visible when items in cart */}
           {totalQuantity > 0 && (
@@ -427,8 +434,15 @@ export function Navigation({ settings }: NavigationProps) {
           )}
         </div>
 
-        {/* Mobile Cart + Menu Buttons */}
-        <div className="nav-mobile">
+        {/* Mobile Cart + Account + Menu Buttons */}
+        <div className="nav-show-mobile items-center gap-2">
+          <Link
+            href={isAuthenticated ? "/account" : "/account/login"}
+            className="p-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            aria-label={isAuthenticated ? "My Account" : "Login"}
+          >
+            <User className="h-5 w-5" />
+          </Link>
           {totalQuantity > 0 && (
             <CartButton onOpen={() => setCartDrawerOpen(true)} />
           )}
@@ -578,10 +592,14 @@ export function Navigation({ settings }: NavigationProps) {
                     </Link>
                   ))
                 ) : (
-                  <>
-                    <Button variant="ghost" className="w-full justify-center">Sign In</Button>
-                    <Button className="w-full justify-center">Get Started</Button>
-                  </>
+                  <Link
+                    href={isAuthenticated ? "/account" : "/account/login"}
+                    onClick={closeMobileMenu}
+                    className="btn btn-primary w-full justify-center"
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    {isAuthenticated ? "My Account" : "Login"}
+                  </Link>
                 )}
               </div>
             )}

@@ -59,10 +59,7 @@ const PRODUCT_VARIANT_FRAGMENT = `
     image {
       ...ImageFragment
     }
-    quantityAvailable
     sku
-    weight
-    weightUnit
   }
 `;
 
@@ -149,6 +146,14 @@ const CART_LINE_FRAGMENT = `
     merchandise {
       ... on ProductVariant {
         ...ProductVariantFragment
+        product {
+          id
+          handle
+          title
+          featuredImage {
+            ...ImageFragment
+          }
+        }
       }
     }
     cost {

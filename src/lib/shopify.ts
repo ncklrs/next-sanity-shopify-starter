@@ -5,6 +5,8 @@
  * Uses the Storefront API with GraphQL queries.
  */
 
+import { cache } from 'react';
+
 const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
 const storefrontAccessToken = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 
@@ -93,6 +95,11 @@ export interface ShopifyProduct {
       currencyCode: string;
     };
   };
+  options: Array<{
+    id: string;
+    name: string;
+    values: string[];
+  }>;
   variants: {
     edges: Array<{
       node: {
@@ -179,6 +186,11 @@ const productFragment = `
         currencyCode
       }
     }
+    options {
+      id
+      name
+      values
+    }
     variants(first: 100) {
       edges {
         node {
@@ -233,8 +245,8 @@ export async function getAllProducts(first: number = 250): Promise<ShopifyProduc
   return response.products.edges.map((edge) => edge.node);
 }
 
-// Get product by handle
-export async function getProductByHandle(handle: string): Promise<ShopifyProduct | null> {
+// Get product by handle (cached per request to deduplicate calls)
+export const getProductByHandle = cache(async (handle: string): Promise<ShopifyProduct | null> => {
   const query = `
     ${productFragment}
     query GetProductByHandle($handle: String!) {
@@ -251,7 +263,7 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
   });
 
   return response.product;
-}
+});
 
 // Get all product handles (for generateStaticParams)
 export async function getAllProductHandles(): Promise<string[]> {
@@ -311,8 +323,8 @@ export async function getAllCollections(): Promise<ShopifyCollection[]> {
   return response.collections.edges.map((edge) => edge.node);
 }
 
-// Get collection by handle with products
-export async function getCollectionByHandle(handle: string): Promise<ShopifyCollection | null> {
+// Get collection by handle with products (cached per request to deduplicate calls)
+export const getCollectionByHandle = cache(async (handle: string): Promise<ShopifyCollection | null> => {
   const query = `
     ${productFragment}
     query GetCollectionByHandle($handle: String!) {
@@ -346,7 +358,7 @@ export async function getCollectionByHandle(handle: string): Promise<ShopifyColl
   });
 
   return response.collection;
-}
+});
 
 // Get all collection handles (for generateStaticParams)
 export async function getAllCollectionHandles(): Promise<string[]> {
@@ -440,6 +452,30 @@ export async function getRelatedProducts(
     .map((edge) => edge.node)
     .filter((product) => product.id !== productId)
     .slice(0, limit);
+}
+
+// Get all products excluding hidden ones from Sanity
+export async function getAllVisibleProducts(first: number = 250): Promise<ShopifyProduct[]> {
+  // Import dynamically to avoid circular dependency
+  const { getHiddenProductHandles } = await import('./sanity');
+
+  const [products, hiddenHandles] = await Promise.all([
+    getAllProducts(first),
+    getHiddenProductHandles(),
+  ]);
+
+  // Filter out products that are marked as hidden in Sanity
+  const hiddenSet = new Set(hiddenHandles);
+  return products.filter((product) => !hiddenSet.has(product.handle));
+}
+
+// Filter hidden products from a collection
+export function filterHiddenProducts(
+  products: ShopifyProduct[],
+  hiddenHandles: string[]
+): ShopifyProduct[] {
+  const hiddenSet = new Set(hiddenHandles);
+  return products.filter((product) => !hiddenSet.has(product.handle));
 }
 
 // Format price helper

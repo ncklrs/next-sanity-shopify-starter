@@ -13,4 +13,13 @@ export {
   pageBySlugQuery as pageQuery,
   homepageQuery,
   siteSettingsQuery,
+  shopSettingsQuery,
+  hiddenProductHandlesQuery,
+  getShopSettings,
+  getHiddenProductHandles,
+  getSanityProductByHandle,
+  getSanityCollectionByHandle,
+  type ShopSettings,
+  type SanityProductData,
+  type SanityCollectionData,
 } from "../../sanity/queries";

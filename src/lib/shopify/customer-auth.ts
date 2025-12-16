@@ -3,14 +3,48 @@
  *
  * This module handles the complete OAuth flow:
  * 1. Generate PKCE code verifier and challenge
- * 2. Build authorization URL
+ * 2. Build authorization URL using discovery endpoints
  * 3. Exchange authorization code for tokens
  * 4. Refresh expired tokens
  * 5. Encrypt/decrypt tokens for secure cookie storage
+ *
+ * Uses Shopify's discovery endpoints for dynamic URL resolution:
+ * - /.well-known/openid-configuration - OAuth endpoints
+ * - /.well-known/customer-account-api - GraphQL API endpoint
  */
 
 import { createCipheriv, createDecipheriv, randomBytes, createHash } from "crypto";
 import type { TokenResponse, OAuthState, CustomerAccessToken } from "./customer-types";
+
+// ============================================================================
+// Discovery Configuration Types
+// ============================================================================
+
+interface OpenIDConfiguration {
+  authorization_endpoint: string;
+  token_endpoint: string;
+  end_session_endpoint: string;
+  jwks_uri: string;
+  issuer: string;
+}
+
+interface CustomerAccountAPIConfiguration {
+  graphql_api: string;
+  mcp_api: string;
+}
+
+// Simple in-memory cache for discovery results (server-side)
+let discoveryCache: {
+  openid: OpenIDConfiguration | null;
+  api: CustomerAccountAPIConfiguration | null;
+  expiresAt: number;
+} = {
+  openid: null,
+  api: null,
+  expiresAt: 0,
+};
+
+const DISCOVERY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // ============================================================================
 // Environment Configuration
@@ -31,20 +65,12 @@ const getConfig = () => {
     throw new Error("SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID is required");
   }
 
-  // Extract shop name from domain (e.g., "my-store" from "my-store.myshopify.com")
-  const shopName = shopDomain.replace(".myshopify.com", "");
-
   return {
     shopDomain,
-    shopName,
     clientId,
     clientSecret,
     cookieSecret,
     appUrl,
-    // Customer Account API endpoints
-    authorizationEndpoint: `https://shopify.com/${shopName}/auth/oauth/authorize`,
-    tokenEndpoint: `https://shopify.com/${shopName}/auth/oauth/token`,
-    customerApiEndpoint: `https://shopify.com/${shopName}/account/customer/api/2024-10/graphql`,
     redirectUri: `${appUrl}/api/auth/shopify/callback`,
     // OAuth scopes for Customer Account API
     scopes: [
@@ -54,6 +80,87 @@ const getConfig = () => {
     ].join(" "),
   };
 };
+
+// ============================================================================
+// Discovery Endpoints - Dynamically resolve OAuth & API URLs
+// ============================================================================
+
+/**
+ * Fetch OpenID configuration from Shopify's discovery endpoint
+ * Returns authorization, token, and logout endpoints
+ */
+export async function discoverOpenIDConfiguration(): Promise<OpenIDConfiguration> {
+  const config = getConfig();
+
+  // Check cache
+  if (discoveryCache.openid && Date.now() < discoveryCache.expiresAt) {
+    return discoveryCache.openid;
+  }
+
+  const discoveryUrl = `https://${config.shopDomain}/.well-known/openid-configuration`;
+
+  const response = await fetch(discoveryUrl, {
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch OpenID configuration: ${response.statusText}`);
+  }
+
+  const openidConfig: OpenIDConfiguration = await response.json();
+
+  // Update cache
+  discoveryCache.openid = openidConfig;
+  discoveryCache.expiresAt = Date.now() + DISCOVERY_CACHE_TTL;
+
+  return openidConfig;
+}
+
+/**
+ * Fetch Customer Account API configuration from Shopify's discovery endpoint
+ * Returns GraphQL API endpoint
+ */
+export async function discoverCustomerAccountAPI(): Promise<CustomerAccountAPIConfiguration> {
+  const config = getConfig();
+
+  // Check cache
+  if (discoveryCache.api && Date.now() < discoveryCache.expiresAt) {
+    return discoveryCache.api;
+  }
+
+  const discoveryUrl = `https://${config.shopDomain}/.well-known/customer-account-api`;
+
+  const response = await fetch(discoveryUrl, {
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch Customer Account API configuration: ${response.statusText}`);
+  }
+
+  const apiConfig: CustomerAccountAPIConfiguration = await response.json();
+
+  // Update cache
+  discoveryCache.api = apiConfig;
+  discoveryCache.expiresAt = Date.now() + DISCOVERY_CACHE_TTL;
+
+  return apiConfig;
+}
+
+/**
+ * Clear discovery cache (useful for testing or forcing refresh)
+ */
+export function clearDiscoveryCache(): void {
+  discoveryCache = {
+    openid: null,
+    api: null,
+    expiresAt: 0,
+  };
+}
 
 // ============================================================================
 // PKCE (Proof Key for Code Exchange) Functions
@@ -101,12 +208,17 @@ function base64URLEncode(buffer: Buffer): string {
 
 /**
  * Build the Shopify authorization URL for the OAuth flow
+ * Uses discovery endpoint to get the correct authorization URL
  */
 export async function getAuthorizationUrl(returnTo?: string): Promise<{
   url: string;
   state: OAuthState;
 }> {
   const config = getConfig();
+
+  // Discover the authorization endpoint dynamically
+  const openidConfig = await discoverOpenIDConfiguration();
+
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
   const state = generateState();
@@ -126,7 +238,7 @@ export async function getAuthorizationUrl(returnTo?: string): Promise<{
   params.set("nonce", nonce);
 
   return {
-    url: `${config.authorizationEndpoint}?${params.toString()}`,
+    url: `${openidConfig.authorization_endpoint}?${params.toString()}`,
     state: {
       codeVerifier,
       state,
@@ -141,12 +253,16 @@ export async function getAuthorizationUrl(returnTo?: string): Promise<{
 
 /**
  * Exchange the authorization code for access and refresh tokens
+ * Uses discovery endpoint to get the correct token URL
  */
 export async function exchangeCodeForTokens(
   code: string,
   codeVerifier: string
 ): Promise<CustomerAccessToken> {
   const config = getConfig();
+
+  // Discover the token endpoint dynamically
+  const openidConfig = await discoverOpenIDConfiguration();
 
   const params = new URLSearchParams({
     grant_type: "authorization_code",
@@ -161,7 +277,7 @@ export async function exchangeCodeForTokens(
     params.set("client_secret", config.clientSecret);
   }
 
-  const response = await fetch(config.tokenEndpoint, {
+  const response = await fetch(openidConfig.token_endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -189,11 +305,15 @@ export async function exchangeCodeForTokens(
 
 /**
  * Refresh an expired access token using the refresh token
+ * Uses discovery endpoint to get the correct token URL
  */
 export async function refreshAccessToken(
   refreshToken: string
 ): Promise<CustomerAccessToken> {
   const config = getConfig();
+
+  // Discover the token endpoint dynamically
+  const openidConfig = await discoverOpenIDConfiguration();
 
   const params = new URLSearchParams({
     grant_type: "refresh_token",
@@ -205,7 +325,7 @@ export async function refreshAccessToken(
     params.set("client_secret", config.clientSecret);
   }
 
-  const response = await fetch(config.tokenEndpoint, {
+  const response = await fetch(openidConfig.token_endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -337,6 +457,12 @@ export const stateCookieOptions = {
 
 /**
  * Make an authenticated request to the Customer Account API
+ * Uses discovery endpoint to get the correct GraphQL API URL
+ *
+ * Required headers per Shopify docs:
+ * - Authorization: Bearer token
+ * - Origin: Required for 401 invalid_token errors
+ * - User-Agent: Required to avoid 403 errors
  */
 export async function customerApiRequest<T>(
   accessToken: string,
@@ -345,11 +471,22 @@ export async function customerApiRequest<T>(
 ): Promise<T> {
   const config = getConfig();
 
-  const response = await fetch(config.customerApiEndpoint, {
+  // Discover the GraphQL API endpoint dynamically
+  const apiConfig = await discoverCustomerAccountAPI();
+
+  // Log for debugging
+  console.log("Customer API request to:", apiConfig.graphql_api);
+  console.log("Origin:", config.appUrl);
+
+  const response = await fetch(apiConfig.graphql_api, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
+      Authorization: accessToken,
+      // Origin header is required - must match JavaScript Origins in Shopify settings
+      Origin: config.appUrl,
+      // User-Agent is required to avoid 403 errors
+      "User-Agent": "Shopify Customer Account API Client",
     },
     body: JSON.stringify({ query, variables }),
   });
@@ -357,6 +494,7 @@ export async function customerApiRequest<T>(
   if (!response.ok) {
     const errorText = await response.text();
     console.error("Customer API request failed:", response.status, errorText);
+    console.error("WWW-Authenticate:", response.headers.get("www-authenticate"));
     throw new Error(`Customer API request failed: ${response.statusText}`);
   }
 
@@ -368,6 +506,21 @@ export async function customerApiRequest<T>(
   }
 
   return json.data;
+}
+
+/**
+ * Get the logout URL for ending the customer session
+ * Uses discovery endpoint to get the correct logout URL
+ */
+export async function getLogoutUrl(idToken: string, postLogoutRedirectUri: string): Promise<string> {
+  const openidConfig = await discoverOpenIDConfiguration();
+
+  const params = new URLSearchParams({
+    id_token_hint: idToken,
+    post_logout_redirect_uri: postLogoutRedirectUri,
+  });
+
+  return `${openidConfig.end_session_endpoint}?${params.toString()}`;
 }
 
 // ============================================================================

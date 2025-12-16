@@ -7,14 +7,14 @@ import { visionTool } from "@sanity/vision";
 import { unsplashImageAsset } from "sanity-plugin-asset-source-unsplash";
 import { media } from "sanity-plugin-media";
 import { assist } from "@sanity/assist";
-import { CogIcon, DocumentsIcon, ControlsIcon, BellIcon } from "@sanity/icons";
+import { CogIcon, DocumentsIcon, ControlsIcon, BellIcon, BasketIcon } from "@sanity/icons";
 import { schemaTypes } from "./sanity/schemas";
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET!;
 
 // Singleton document types that should not show as lists
-const singletonTypes = new Set(["siteSettings"]);
+const singletonTypes = new Set(["siteSettings", "shopSettings"]);
 
 // Document types managed manually in structure (excluded from auto-generation)
 const structuredTypes = new Set([
@@ -83,6 +83,17 @@ const structure: StructureResolver = (S) =>
           S.document()
             .schemaType("siteSettings")
             .documentId("siteSettings")
+        ),
+
+      // Shop Settings singleton
+      S.listItem()
+        .title("Shop Settings")
+        .id("shopSettings")
+        .icon(BasketIcon)
+        .child(
+          S.document()
+            .schemaType("shopSettings")
+            .documentId("shopSettings")
         ),
 
       S.divider(),

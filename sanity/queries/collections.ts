@@ -1,4 +1,5 @@
 import { groq } from "next-sanity";
+import { moduleProjection } from "./modules";
 
 // Collection projections
 const collectionCardProjection = groq`{
@@ -28,7 +29,8 @@ const collectionDetailProjection = groq`{
     "available": store.status == "active"
   },
   body,
-  seo
+  seo,
+  modules[]${moduleProjection}
 }`;
 
 // ─────────────────────────────────────────────

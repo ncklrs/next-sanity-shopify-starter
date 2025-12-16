@@ -52,6 +52,8 @@ export {
   homepageReferenceQuery,
   siteMetadataQuery,
   socialLinksQuery,
+  shopSettingsQuery,
+  hiddenProductHandlesQuery,
 } from "./settings";
 
 // Subscriber queries
@@ -116,6 +118,9 @@ export {
   type PostData,
   type PostListItem,
   type SiteSettings,
+  type ShopSettings,
+  type SanityProductData,
+  type SanityCollectionData,
   // Page fetchers
   getHomepage,
   getPageBySlug,
@@ -123,6 +128,8 @@ export {
   getAllPageSlugs,
   // Settings fetchers
   getSiteSettings,
+  getShopSettings,
+  getHiddenProductHandles,
   // Post fetchers
   getAllPosts,
   getPostBySlug,
@@ -139,4 +146,7 @@ export {
   getPageWithSettingsAndEngagement,
   // Blog layout fetcher
   getBlogLayoutData,
+  // Product & Collection fetchers (Sanity data with modules)
+  getSanityProductByHandle,
+  getSanityCollectionByHandle,
 } from "./fetchers";

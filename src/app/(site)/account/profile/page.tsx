@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
-import { Loader2, Check, AlertCircle } from "lucide-react";
+import { Check, AlertCircle } from "lucide-react";
 
 /**
  * Profile Page
@@ -64,23 +64,23 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--foreground)] border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-        <p className="mt-1 text-gray-600">
+        <h1 className="display-md">Profile Settings</h1>
+        <p className="mt-2 text-[var(--foreground-muted)]">
           Update your personal information
         </p>
       </div>
 
       {/* Success Message */}
       {success && (
-        <div className="flex items-center gap-3 rounded-lg bg-green-50 p-4">
+        <div className="flex items-center gap-3 border border-green-200 bg-green-50 p-4">
           <Check className="h-5 w-5 text-green-600" />
           <p className="text-sm font-medium text-green-800">
             Profile updated successfully
@@ -90,28 +90,25 @@ export default function ProfilePage() {
 
       {/* Error Message */}
       {error && (
-        <div className="flex items-center gap-3 rounded-lg bg-red-50 p-4">
-          <AlertCircle className="h-5 w-5 text-red-600" />
-          <p className="text-sm font-medium text-red-800">{error}</p>
+        <div className="flex items-center gap-3 border border-[var(--accent-red)] bg-red-50 p-4">
+          <AlertCircle className="h-5 w-5 text-[var(--accent-red)]" />
+          <p className="text-sm font-medium text-[var(--accent-red)]">{error}</p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Personal Information */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <div className="border border-[var(--border-light)] bg-[var(--surface)] p-6">
+          <h2 className="font-serif text-lg text-[var(--foreground)]">
             Personal Information
           </h2>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-[var(--foreground-muted)]">
             This information will be used for your orders
           </p>
 
           <div className="mt-6 grid gap-6 sm:grid-cols-2">
-            <div>
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700"
-              >
+            <div className="form-group">
+              <label htmlFor="firstName" className="form-label">
                 First name
               </label>
               <input
@@ -121,15 +118,12 @@ export default function ProfilePage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, firstName: e.target.value }))
                 }
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="input"
               />
             </div>
 
-            <div>
-              <label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700"
-              >
+            <div className="form-group">
+              <label htmlFor="lastName" className="form-label">
                 Last name
               </label>
               <input
@@ -139,15 +133,12 @@ export default function ProfilePage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, lastName: e.target.value }))
                 }
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="input"
               />
             </div>
 
-            <div className="sm:col-span-2">
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
+            <div className="form-group sm:col-span-2">
+              <label htmlFor="email" className="form-label">
                 Email address
               </label>
               <input
@@ -155,18 +146,15 @@ export default function ProfilePage() {
                 id="email"
                 value={customer?.email || ""}
                 disabled
-                className="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-500"
+                className="input bg-[var(--background-warm)] text-[var(--foreground-muted)] cursor-not-allowed"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-[var(--foreground-muted)]">
                 Email cannot be changed. Contact support if you need to update it.
               </p>
             </div>
 
-            <div className="sm:col-span-2">
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-gray-700"
-              >
+            <div className="form-group sm:col-span-2">
+              <label htmlFor="phone" className="form-label">
                 Phone number
               </label>
               <input
@@ -177,18 +165,18 @@ export default function ProfilePage() {
                   setFormData((prev) => ({ ...prev, phone: e.target.value }))
                 }
                 placeholder="+1 (555) 000-0000"
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="input"
               />
             </div>
           </div>
         </div>
 
         {/* Communication Preferences */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <div className="border border-[var(--border-light)] bg-[var(--surface)] p-6">
+          <h2 className="font-serif text-lg text-[var(--foreground)]">
             Communication Preferences
           </h2>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-[var(--foreground-muted)]">
             Manage how we contact you
           </p>
 
@@ -204,13 +192,13 @@ export default function ProfilePage() {
                     acceptsMarketing: e.target.checked,
                   }))
                 }
-                className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="mt-1 h-4 w-4 border-[var(--border-light)] text-[var(--foreground)] focus:ring-[var(--foreground)]"
               />
               <label htmlFor="marketing" className="text-sm">
-                <span className="font-medium text-gray-900">
+                <span className="font-medium text-[var(--foreground)]">
                   Marketing emails
                 </span>
-                <p className="text-gray-600">
+                <p className="text-[var(--foreground-muted)]">
                   Receive emails about new products, sales, and special offers
                 </p>
               </label>
@@ -219,43 +207,51 @@ export default function ProfilePage() {
         </div>
 
         {/* Account Information */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="text-lg font-semibold text-gray-900">
+        <div className="border border-[var(--border-light)] bg-[var(--surface)] p-6">
+          <h2 className="font-serif text-lg text-[var(--foreground)]">
             Account Information
           </h2>
 
-          <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+          <dl className="mt-6 grid gap-6 sm:grid-cols-2">
             <div>
-              <dt className="text-sm text-gray-500">Account created</dt>
-              <dd className="mt-1 text-gray-900">
+              <dt className="text-xs uppercase tracking-wider text-[var(--foreground-muted)]">
+                Account created
+              </dt>
+              <dd className="mt-1 text-[var(--foreground)]">
                 {customer?.createdAt
                   ? new Date(customer.createdAt).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
                     })
-                  : "-"}
+                  : "—"}
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Last login</dt>
-              <dd className="mt-1 text-gray-900">
+              <dt className="text-xs uppercase tracking-wider text-[var(--foreground-muted)]">
+                Last login
+              </dt>
+              <dd className="mt-1 text-[var(--foreground)]">
                 {customer?.lastLoginAt
                   ? new Date(customer.lastLoginAt).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
                     })
-                  : "-"}
+                  : "—"}
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Total orders</dt>
-              <dd className="mt-1 text-gray-900">{customer?.totalOrders || 0}</dd>
+              <dt className="text-xs uppercase tracking-wider text-[var(--foreground-muted)]">
+                Total orders
+              </dt>
+              <dd className="mt-1 text-[var(--foreground)]">{customer?.totalOrders || 0}</dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Total spent</dt>
-              <dd className="mt-1 text-gray-900">
+              <dt className="text-xs uppercase tracking-wider text-[var(--foreground-muted)]">
+                Total spent
+              </dt>
+              <dd className="mt-1 text-[var(--foreground)]">
                 {customer?.totalSpent
                   ? new Intl.NumberFormat("en-US", {
                       style: "currency",
@@ -269,13 +265,8 @@ export default function ProfilePage() {
 
         {/* Submit Button */}
         <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-            {saving ? "Saving..." : "Save changes"}
+          <button type="submit" disabled={saving} className="btn btn-primary">
+            {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </form>

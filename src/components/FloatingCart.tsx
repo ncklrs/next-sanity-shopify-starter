@@ -1,26 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useCart } from "@/contexts/CartContext";
 import { CartDrawer } from "@/components/CartDrawer";
 import { ShoppingCartIcon } from "@/components/icons";
 
 export function FloatingCart() {
+  const pathname = usePathname();
   const { totalQuantity } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // Hide on studio routes
+  const isStudioRoute = pathname?.startsWith("/studio");
+
   // Show/hide based on cart quantity
   useEffect(() => {
-    if (totalQuantity > 0) {
+    if (totalQuantity > 0 && !isStudioRoute) {
       setIsVisible(true);
     } else {
       // Delay hiding to allow exit animation
       const timer = setTimeout(() => setIsVisible(false), 300);
       return () => clearTimeout(timer);
     }
-  }, [totalQuantity]);
+  }, [totalQuantity, isStudioRoute]);
 
   // Animate badge when quantity changes
   useEffect(() => {

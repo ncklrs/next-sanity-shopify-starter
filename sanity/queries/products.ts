@@ -1,4 +1,5 @@
 import { groq } from "next-sanity";
+import { moduleProjection } from "./modules";
 
 // Product projections for different use cases
 const productCardProjection = groq`{
@@ -43,7 +44,8 @@ const productDetailProjection = groq`{
     "options": store.options
   },
   body,
-  seo
+  seo,
+  modules[]${moduleProjection}
 }`;
 
 // ─────────────────────────────────────────────

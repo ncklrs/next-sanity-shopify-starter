@@ -82,36 +82,33 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { firstName, lastName, phone, acceptsMarketing } = body;
 
-    // Update in Shopify
+    // Update in Shopify (only firstName and lastName are supported)
     const updatedCustomer = await updateCustomer(authData.accessToken, {
       firstName,
       lastName,
-      phone,
-      acceptsMarketing,
     });
 
-    // Sync to Sanity
-    if (updatedCustomer) {
-      const sanityCustomer = await client.fetch(
-        `*[_type == "customer" && shopifyCustomerId == $shopifyId][0]`,
-        { shopifyId: authData.customerId }
-      );
+    // Sync to Sanity (store all fields including phone and marketing preferences)
+    const sanityCustomer = await client.fetch(
+      `*[_type == "customer" && shopifyCustomerId == $shopifyId][0]`,
+      { shopifyId: authData.customerId }
+    );
 
-      if (sanityCustomer) {
-        await client
-          .patch(sanityCustomer._id)
-          .set({
-            firstName: updatedCustomer.firstName,
-            lastName: updatedCustomer.lastName,
-            phone: updatedCustomer.phone,
-            acceptsMarketing: updatedCustomer.acceptsMarketing,
-          })
-          .commit();
-      }
+    if (sanityCustomer) {
+      await client
+        .patch(sanityCustomer._id)
+        .set({
+          firstName: updatedCustomer?.firstName ?? firstName,
+          lastName: updatedCustomer?.lastName ?? lastName,
+          // Phone and marketing stored in Sanity only (not supported by Customer Account API)
+          phone: phone || null,
+          acceptsMarketing: acceptsMarketing ?? false,
+        })
+        .commit();
     }
 
     // Return updated Sanity customer data
-    const sanityCustomer = await client.fetch(
+    const updatedSanityCustomer = await client.fetch(
       `*[_type == "customer" && shopifyCustomerId == $shopifyId][0]{
         _id,
         _type,
@@ -132,7 +129,7 @@ export async function PUT(request: NextRequest) {
       { shopifyId: authData.customerId }
     );
 
-    return NextResponse.json({ customer: sanityCustomer });
+    return NextResponse.json({ customer: updatedSanityCustomer });
   } catch (error) {
     console.error("Failed to update profile:", error);
     return NextResponse.json(

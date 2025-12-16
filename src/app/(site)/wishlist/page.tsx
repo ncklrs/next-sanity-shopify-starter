@@ -106,6 +106,7 @@ export default function WishlistPage() {
                                 src={product.featuredImage.url}
                                 alt={product.featuredImage.altText || product.title}
                                 fill
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                               />
                               {!product.availableForSale && (

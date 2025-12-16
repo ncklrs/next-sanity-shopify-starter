@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { MapPin, Plus, Pencil, Trash2, Loader2, Check } from "lucide-react";
+import { MapPin, Plus, Pencil, Trash2, Check } from "lucide-react";
 
 interface Address {
   id: string;
@@ -84,18 +84,18 @@ export default function AddressesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--foreground)] border-t-transparent" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded-lg bg-red-50 p-6 text-center">
-        <p className="text-red-800">{error}</p>
+      <div className="border border-[var(--accent-red)] bg-red-50 p-6 text-center">
+        <p className="text-[var(--accent-red)]">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 text-sm font-medium text-red-600 hover:text-red-700"
+          className="mt-4 text-sm font-medium text-[var(--accent-red)] underline hover:no-underline"
         >
           Try again
         </button>
@@ -104,42 +104,39 @@ export default function AddressesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Addresses</h1>
-          <p className="mt-1 text-gray-600">
+          <h1 className="display-md">Addresses</h1>
+          <p className="mt-2 text-[var(--foreground-muted)]">
             Manage your shipping and billing addresses
           </p>
         </div>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-        >
-          <Plus className="h-4 w-4" />
-          Add address
+        <button onClick={() => setShowAddForm(true)} className="btn btn-primary">
+          <Plus className="mr-2 h-4 w-4" />
+          Add Address
         </button>
       </div>
 
       {addresses.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white py-12 text-center">
-          <MapPin className="mx-auto h-12 w-12 text-gray-300" />
-          <h3 className="mt-4 text-lg font-medium text-gray-900">
+        <div className="border border-dashed border-[var(--border-light)] bg-[var(--surface)] py-16 text-center">
+          <MapPin className="mx-auto h-12 w-12 text-[var(--foreground-muted)] opacity-40" />
+          <h3 className="mt-4 font-serif text-lg text-[var(--foreground)]">
             No addresses saved
           </h3>
-          <p className="mt-2 text-gray-500">
+          <p className="mt-2 text-[var(--foreground-muted)]">
             Add an address for faster checkout
           </p>
           <button
             onClick={() => setShowAddForm(true)}
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="btn btn-primary mt-6"
           >
-            <Plus className="h-4 w-4" />
-            Add your first address
+            <Plus className="mr-2 h-4 w-4" />
+            Add Your First Address
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2">
           {addresses.map((address) => (
             <AddressCard
               key={address.id}
@@ -152,7 +149,7 @@ export default function AddressesPage() {
         </div>
       )}
 
-      {/* Add/Edit Address Modal would go here */}
+      {/* Add/Edit Address Modal */}
       {(showAddForm || editingId) && (
         <AddressFormModal
           address={editingId ? addresses.find((a) => a.id === editingId) : undefined}
@@ -188,37 +185,37 @@ function AddressCard({
   const fullName = [address.firstName, address.lastName].filter(Boolean).join(" ");
 
   return (
-    <div className="relative rounded-lg border border-gray-200 bg-white p-6">
+    <div className="relative border border-[var(--border-light)] bg-[var(--surface)] p-6">
       {address.isDefault && (
-        <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+        <span className="absolute right-4 top-4 inline-flex items-center gap-1 bg-[var(--background-warm)] px-2.5 py-1 text-xs uppercase tracking-wider text-[var(--foreground)]">
           <Check className="h-3 w-3" />
           Default
         </span>
       )}
 
-      <div className="space-y-1">
-        {fullName && <p className="font-medium text-gray-900">{fullName}</p>}
-        {address.company && <p className="text-gray-600">{address.company}</p>}
-        {address.address1 && <p className="text-gray-600">{address.address1}</p>}
-        {address.address2 && <p className="text-gray-600">{address.address2}</p>}
-        <p className="text-gray-600">
+      <div className="space-y-1 text-sm">
+        {fullName && <p className="font-medium text-[var(--foreground)]">{fullName}</p>}
+        {address.company && <p className="text-[var(--foreground-muted)]">{address.company}</p>}
+        {address.address1 && <p className="text-[var(--foreground-muted)]">{address.address1}</p>}
+        {address.address2 && <p className="text-[var(--foreground-muted)]">{address.address2}</p>}
+        <p className="text-[var(--foreground-muted)]">
           {[address.city, address.province, address.zip].filter(Boolean).join(", ")}
         </p>
-        {address.country && <p className="text-gray-600">{address.country}</p>}
-        {address.phone && <p className="mt-2 text-gray-600">{address.phone}</p>}
+        {address.country && <p className="text-[var(--foreground-muted)]">{address.country}</p>}
+        {address.phone && <p className="mt-2 text-[var(--foreground-muted)]">{address.phone}</p>}
       </div>
 
-      <div className="mt-4 flex items-center gap-4 border-t border-gray-100 pt-4">
+      <div className="mt-6 flex items-center gap-4 border-t border-[var(--border-light)] pt-4">
         <button
           onClick={onEdit}
-          className="flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-gray-900"
+          className="flex items-center gap-1 text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors duration-300"
         >
           <Pencil className="h-4 w-4" />
           Edit
         </button>
         <button
           onClick={onDelete}
-          className="flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-700"
+          className="flex items-center gap-1 text-sm text-[var(--foreground-muted)] hover:text-[var(--accent-red)] transition-colors duration-300"
         >
           <Trash2 className="h-4 w-4" />
           Delete
@@ -226,7 +223,7 @@ function AddressCard({
         {!address.isDefault && (
           <button
             onClick={onSetDefault}
-            className="ml-auto text-sm font-medium text-indigo-600 hover:text-indigo-700"
+            className="ml-auto text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors duration-300"
           >
             Set as default
           </button>
@@ -290,132 +287,153 @@ function AddressFormModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-lg bg-white p-6">
-        <h2 className="text-lg font-semibold text-gray-900">
-          {address ? "Edit address" : "Add new address"}
+      <div className="w-full max-w-lg bg-[var(--background)] p-8">
+        <h2 className="font-serif text-xl text-[var(--foreground)]">
+          {address ? "Edit Address" : "Add New Address"}
         </h2>
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
+            <div className="form-group">
+              <label htmlFor="firstName" className="form-label">First name</label>
+              <input
+                type="text"
+                id="firstName"
+                value={formData.firstName}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, firstName: e.target.value }))
+                }
+                className="input"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="lastName" className="form-label">Last name</label>
+              <input
+                type="text"
+                id="lastName"
+                value={formData.lastName}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, lastName: e.target.value }))
+                }
+                className="input"
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="company" className="form-label">Company (optional)</label>
             <input
               type="text"
-              placeholder="First name"
-              value={formData.firstName}
+              id="company"
+              value={formData.company}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, firstName: e.target.value }))
+                setFormData((prev) => ({ ...prev, company: e.target.value }))
               }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
-            <input
-              type="text"
-              placeholder="Last name"
-              value={formData.lastName}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, lastName: e.target.value }))
-              }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="input"
             />
           </div>
 
-          <input
-            type="text"
-            placeholder="Company (optional)"
-            value={formData.company}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, company: e.target.value }))
-            }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          />
+          <div className="form-group">
+            <label htmlFor="address1" className="form-label">Address</label>
+            <input
+              type="text"
+              id="address1"
+              value={formData.address1}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, address1: e.target.value }))
+              }
+              required
+              className="input"
+            />
+          </div>
 
-          <input
-            type="text"
-            placeholder="Address"
-            value={formData.address1}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, address1: e.target.value }))
-            }
-            required
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          />
-
-          <input
-            type="text"
-            placeholder="Apartment, suite, etc. (optional)"
-            value={formData.address2}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, address2: e.target.value }))
-            }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          />
+          <div className="form-group">
+            <label htmlFor="address2" className="form-label">Apartment, suite, etc. (optional)</label>
+            <input
+              type="text"
+              id="address2"
+              value={formData.address2}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, address2: e.target.value }))
+              }
+              className="input"
+            />
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
+            <div className="form-group">
+              <label htmlFor="city" className="form-label">City</label>
+              <input
+                type="text"
+                id="city"
+                value={formData.city}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, city: e.target.value }))
+                }
+                required
+                className="input"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="province" className="form-label">State / Province</label>
+              <input
+                type="text"
+                id="province"
+                value={formData.province}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, province: e.target.value }))
+                }
+                className="input"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="zip" className="form-label">ZIP Code</label>
+              <input
+                type="text"
+                id="zip"
+                value={formData.zip}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, zip: e.target.value }))
+                }
+                required
+                className="input"
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="country" className="form-label">Country</label>
             <input
               type="text"
-              placeholder="City"
-              value={formData.city}
+              id="country"
+              value={formData.country}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, city: e.target.value }))
+                setFormData((prev) => ({ ...prev, country: e.target.value }))
               }
               required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
-            <input
-              type="text"
-              placeholder="State/Province"
-              value={formData.province}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, province: e.target.value }))
-              }
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
-            <input
-              type="text"
-              placeholder="ZIP code"
-              value={formData.zip}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, zip: e.target.value }))
-              }
-              required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="input"
             />
           </div>
 
-          <input
-            type="text"
-            placeholder="Country"
-            value={formData.country}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, country: e.target.value }))
-            }
-            required
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          />
-
-          <input
-            type="tel"
-            placeholder="Phone (optional)"
-            value={formData.phone}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, phone: e.target.value }))
-            }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-          />
+          <div className="form-group">
+            <label htmlFor="phone" className="form-label">Phone (optional)</label>
+            <input
+              type="tel"
+              id="phone"
+              value={formData.phone}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, phone: e.target.value }))
+              }
+              className="input"
+            />
+          </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
+            <button type="button" onClick={onClose} className="btn btn-secondary">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-              {saving ? "Saving..." : "Save address"}
+            <button type="submit" disabled={saving} className="btn btn-primary">
+              {saving ? "Saving..." : "Save Address"}
             </button>
           </div>
         </form>

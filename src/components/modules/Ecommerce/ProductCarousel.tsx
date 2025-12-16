@@ -42,6 +42,7 @@ interface Product {
   badge?: string;
   rating?: number;
   reviewCount?: number;
+  availableForSale?: boolean;
 }
 
 interface ProductCarouselProps {
@@ -57,15 +58,17 @@ interface ProductCarouselProps {
   onAddToCart?: (productId: string) => void;
 }
 
-function ProductCard({ product, onAddToCart, onClick }: {
+function ProductCard({ product, onAddToCart, onClick, isPriority = false }: {
   product: Product;
   onAddToCart?: (productId: string) => void;
   onClick?: (product: Product) => void;
+  isPriority?: boolean;
 }) {
   const hasDiscount = product.compareAtPrice && Number(product.compareAtPrice) > Number(product.price);
   const discountPercent = hasDiscount
     ? Math.round(((Number(product.compareAtPrice) - Number(product.price)) / Number(product.compareAtPrice)) * 100)
     : 0;
+  const isOutOfStock = product.availableForSale === false;
 
   return (
     <div className="flex-shrink-0 w-80 group">
@@ -82,6 +85,7 @@ function ProductCard({ product, onAddToCart, onClick }: {
               width={product.image.width || 400}
               height={product.image.height || 400}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              priority={isPriority}
             />
           ) : (
             <div className="w-full h-full bg-[var(--surface-elevated)] flex items-center justify-center">
@@ -89,11 +93,17 @@ function ProductCard({ product, onAddToCart, onClick }: {
             </div>
           )}
 
-          {product.badge && (
-            <div className="absolute top-3 left-3">
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-2">
+            {product.badge && (
               <Badge variant="gradient">{product.badge}</Badge>
-            </div>
-          )}
+            )}
+            {isOutOfStock && (
+              <span className="px-2 py-1 text-xs font-semibold uppercase tracking-wide bg-[var(--foreground-muted)] text-white rounded">
+                Out of Stock
+              </span>
+            )}
+          </div>
           {hasDiscount && (
             <div className="absolute top-3 right-3">
               <Badge variant="success">-{discountPercent}%</Badge>
@@ -285,12 +295,13 @@ export function ProductCarousel({
             className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {products.map((product) => (
+            {products.map((product, index) => (
               <ProductCard
                 key={product._id}
                 product={product}
                 onAddToCart={onAddToCart}
                 onClick={onProductClick}
+                isPriority={index === 0}
               />
             ))}
           </div>

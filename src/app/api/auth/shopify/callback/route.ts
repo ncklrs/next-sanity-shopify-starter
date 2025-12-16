@@ -9,21 +9,33 @@ import {
   cookieOptions,
   customerApiRequest,
 } from "@/lib/shopify/customer-auth";
-import type { OAuthState, ShopifyCustomer } from "@/lib/shopify/customer-types";
+import type { OAuthState } from "@/lib/shopify/customer-types";
 import { writeClient as client } from "../../../../../../sanity/lib/client";
 
+// Minimal customer data needed for login
+interface CustomerLoginData {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string | null;
+}
+
 // GraphQL query to fetch customer data after successful auth
+// Uses Customer Account API schema (different from Admin/Storefront APIs)
+// Note: createdAt and numberOfOrders are NOT available in Customer Account API
 const CUSTOMER_QUERY = `
-  query {
+  query CustomerInfo {
     customer {
       id
-      email
+      emailAddress {
+        emailAddress
+      }
       firstName
       lastName
-      phone
-      acceptsMarketing
-      createdAt
-      numberOfOrders
+      phoneNumber {
+        phoneNumber
+      }
     }
   }
 `;
@@ -45,10 +57,13 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 
+  // Use APP_URL for all redirects to ensure correct domain
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+
   // Handle OAuth errors from Shopify
   if (error) {
     console.error("OAuth error:", error, errorDescription);
-    const errorUrl = new URL("/account/login", request.nextUrl.origin);
+    const errorUrl = new URL("/account/login", baseUrl);
     errorUrl.searchParams.set("error", error);
     if (errorDescription) {
       errorUrl.searchParams.set("error_description", errorDescription);
@@ -59,7 +74,7 @@ export async function GET(request: NextRequest) {
   // Verify required parameters
   if (!code || !state) {
     console.error("Missing code or state parameter");
-    const errorUrl = new URL("/account/login", request.nextUrl.origin);
+    const errorUrl = new URL("/account/login", baseUrl);
     errorUrl.searchParams.set("error", "invalid_request");
     return NextResponse.redirect(errorUrl);
   }
@@ -84,14 +99,28 @@ export async function GET(request: NextRequest) {
     const tokens = await exchangeCodeForTokens(code, storedState.codeVerifier);
 
     // Fetch customer data from Shopify
-    const { customer } = await customerApiRequest<{ customer: ShopifyCustomer }>(
-      tokens.accessToken,
-      CUSTOMER_QUERY
-    );
+    const response = await customerApiRequest<{
+      customer: {
+        id: string;
+        emailAddress?: { emailAddress: string };
+        firstName?: string;
+        lastName?: string;
+        phoneNumber?: { phoneNumber: string };
+      };
+    }>(tokens.accessToken, CUSTOMER_QUERY);
 
-    if (!customer) {
+    if (!response.customer) {
       throw new Error("Failed to fetch customer data");
     }
+
+    // Transform the Customer Account API response to our format
+    const customer: CustomerLoginData = {
+      id: response.customer.id,
+      email: response.customer.emailAddress?.emailAddress || "",
+      firstName: response.customer.firstName || null,
+      lastName: response.customer.lastName || null,
+      phone: response.customer.phoneNumber?.phoneNumber || null,
+    };
 
     // Upsert customer in Sanity (create or update)
     await upsertSanityCustomer(customer);
@@ -115,7 +144,17 @@ export async function GET(request: NextRequest) {
 
     // Redirect to the returnTo URL or account page
     const redirectUrl = storedState.returnTo || "/account";
-    return NextResponse.redirect(new URL(redirectUrl, request.nextUrl.origin));
+
+    // Debug logging
+    console.log("=== CALLBACK REDIRECT DEBUG ===");
+    console.log("returnTo:", redirectUrl);
+    console.log("request.nextUrl.origin:", request.nextUrl.origin);
+    console.log("NEXT_PUBLIC_APP_URL:", process.env.NEXT_PUBLIC_APP_URL);
+    console.log("================================");
+
+    // Use APP_URL for redirect to ensure correct domain
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+    return NextResponse.redirect(new URL(redirectUrl, appUrl));
   } catch (error) {
     console.error("OAuth callback failed:", error);
 
@@ -123,7 +162,7 @@ export async function GET(request: NextRequest) {
     const cookieStore = await cookies();
     cookieStore.delete(STATE_COOKIE_NAME);
 
-    const errorUrl = new URL("/account/login", request.nextUrl.origin);
+    const errorUrl = new URL("/account/login", baseUrl);
     errorUrl.searchParams.set("error", "callback_failed");
     return NextResponse.redirect(errorUrl);
   }
@@ -132,7 +171,7 @@ export async function GET(request: NextRequest) {
 /**
  * Create or update customer record in Sanity
  */
-async function upsertSanityCustomer(shopifyCustomer: ShopifyCustomer) {
+async function upsertSanityCustomer(shopifyCustomer: CustomerLoginData) {
   const existingCustomer = await client.fetch(
     `*[_type == "customer" && shopifyCustomerId == $shopifyId][0]`,
     { shopifyId: shopifyCustomer.id }
@@ -145,10 +184,8 @@ async function upsertSanityCustomer(shopifyCustomer: ShopifyCustomer) {
     firstName: shopifyCustomer.firstName,
     lastName: shopifyCustomer.lastName,
     phone: shopifyCustomer.phone,
-    acceptsMarketing: shopifyCustomer.acceptsMarketing,
-    createdAt: shopifyCustomer.createdAt,
+    acceptsMarketing: false, // Will be updated when full profile is fetched
     lastLoginAt: new Date().toISOString(),
-    totalOrders: shopifyCustomer.numberOfOrders,
   };
 
   if (existingCustomer) {

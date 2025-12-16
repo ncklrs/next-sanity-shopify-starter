@@ -73,6 +73,7 @@ export interface PhoneNumber {
 // Address Types
 // ============================================================================
 
+// Customer Account API address type
 export interface ShopifyAddress {
   id: string;
   firstName: string | null;
@@ -81,14 +82,10 @@ export interface ShopifyAddress {
   address1: string | null;
   address2: string | null;
   city: string | null;
-  province: string | null;
-  provinceCode: string | null;
-  country: string | null;
-  countryCodeV2: string | null;
+  zoneCode: string | null;
   zip: string | null;
-  phone: string | null;
+  phoneNumber: string | null;
   formatted: string[];
-  formattedArea: string | null;
 }
 
 export interface AddressInput {
@@ -108,27 +105,26 @@ export interface AddressInput {
 // Order Types
 // ============================================================================
 
+// Customer Account API order type
 export interface ShopifyOrder {
   id: string;
   name: string; // Order number like "#1001"
-  orderNumber: number;
+  number: number;
   processedAt: string;
   financialStatus: OrderFinancialStatus;
-  fulfillmentStatus: OrderFulfillmentStatus;
-  currentTotalPrice: Money;
-  currentSubtotalPrice: Money;
-  currentTotalTax: Money;
-  totalShippingPrice: Money;
+  totalPrice: Money;
+  subtotal: Money;
+  totalTax: Money;
+  totalShipping: Money;
   shippingAddress: ShopifyAddress | null;
   billingAddress: ShopifyAddress | null;
   lineItems: {
     edges: Array<{ node: OrderLineItem }>;
     pageInfo: PageInfo;
   };
-  fulfillments: Fulfillment[];
-  statusUrl: string;
-  canceledAt: string | null;
-  cancelReason: OrderCancelReason | null;
+  fulfillments: {
+    edges: Array<{ node: Fulfillment }>;
+  };
 }
 
 export type OrderFinancialStatus =
@@ -140,70 +136,48 @@ export type OrderFinancialStatus =
   | "REFUNDED"
   | "VOIDED";
 
-export type OrderFulfillmentStatus =
+// Note: fulfillmentStatus is derived from fulfillments array in Customer Account API
+// These status strings are used for display purposes
+export type FulfillmentStatus =
   | "UNFULFILLED"
   | "PARTIALLY_FULFILLED"
   | "FULFILLED"
-  | "RESTOCKED"
-  | "PENDING_FULFILLMENT"
-  | "OPEN"
-  | "IN_PROGRESS"
-  | "ON_HOLD"
-  | "SCHEDULED";
+  | "IN_PROGRESS";
 
-export type OrderCancelReason =
-  | "CUSTOMER"
-  | "FRAUD"
-  | "INVENTORY"
-  | "DECLINED"
-  | "OTHER";
-
+// Customer Account API line item type
 export interface OrderLineItem {
-  title: string;
-  quantity: number;
-  originalTotalPrice: Money;
-  discountedTotalPrice: Money;
-  variant: OrderLineItemVariant | null;
-}
-
-export interface OrderLineItemVariant {
   id: string;
   title: string;
-  image: Image | null;
+  quantity: number;
   price: Money;
-  sku: string | null;
-  product: {
-    id: string;
-    handle: string;
-    title: string;
-  } | null;
+  totalPrice: Money;
+  image: Image | null;
 }
 
+// Customer Account API fulfillment type
 export interface Fulfillment {
-  trackingCompany: string | null;
-  trackingInfo: Array<{
-    number: string;
+  id: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  latestShipmentStatus: string | null;
+  estimatedDeliveryAt: string | null;
+  trackingInformation: Array<{
+    company: string | null;
+    number: string | null;
     url: string | null;
   }>;
-  fulfillmentLineItems: {
-    edges: Array<{
-      node: {
-        lineItem: OrderLineItem;
-        quantity: number;
-      };
-    }>;
-  };
 }
 
 // ============================================================================
 // Mutation Input Types
 // ============================================================================
 
+// Customer Account API only supports firstName and lastName updates
+// Phone and marketing preferences are managed through other channels
 export interface CustomerUpdateInput {
   firstName?: string;
   lastName?: string;
-  phone?: string;
-  acceptsMarketing?: boolean;
 }
 
 // ============================================================================
@@ -264,38 +238,12 @@ export interface CustomerQueryResponse {
   customer: ShopifyCustomer | null;
 }
 
-export interface CustomerUpdateResponse {
-  customerUpdate: {
-    customer: ShopifyCustomer | null;
-    customerUserErrors: CustomerUserError[];
-  };
-}
+// Note: Response types are now defined inline in customer-api.ts functions
+// to match the actual Customer Account API schema which uses "userErrors" not "customerUserErrors"
 
-export interface CustomerUserError {
+export interface UserError {
   field: string[] | null;
   message: string;
-  code: string;
-}
-
-export interface AddressCreateResponse {
-  customerAddressCreate: {
-    customerAddress: ShopifyAddress | null;
-    customerUserErrors: CustomerUserError[];
-  };
-}
-
-export interface AddressUpdateResponse {
-  customerAddressUpdate: {
-    customerAddress: ShopifyAddress | null;
-    customerUserErrors: CustomerUserError[];
-  };
-}
-
-export interface AddressDeleteResponse {
-  customerAddressDelete: {
-    deletedCustomerAddressId: string | null;
-    customerUserErrors: CustomerUserError[];
-  };
 }
 
 // ============================================================================

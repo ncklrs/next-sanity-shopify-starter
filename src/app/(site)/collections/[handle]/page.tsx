@@ -4,8 +4,15 @@ import Image from "next/image";
 import {
   getCollectionByHandle,
   getAllCollectionHandles,
+  filterHiddenProducts,
   formatPrice,
 } from "@/lib/shopify";
+import { getHiddenProductHandles, getSanityCollectionByHandle } from "@/lib/sanity";
+import { ModuleRenderer } from "@/components/ModuleRenderer";
+
+// Route segment config - ISR revalidation
+export const revalidate = 3600; // Revalidate every hour
+export const dynamicParams = true; // Allow params not in generateStaticParams
 
 export async function generateStaticParams() {
   if (!process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN ||
@@ -38,10 +45,30 @@ export default async function CollectionPage({ params }: { params: Promise<{ han
   const { handle } = await params;
 
   try {
-    const collection = await getCollectionByHandle(handle);
+    // Fetch Shopify collection, hidden handles, and Sanity collection data (with modules) in parallel
+    const [collection, hiddenHandles, sanityCollection] = await Promise.all([
+      getCollectionByHandle(handle),
+      getHiddenProductHandles(),
+      getSanityCollectionByHandle(handle),
+    ]);
     if (!collection) notFound();
 
-    const products = collection.products?.edges?.map((edge) => edge.node) || [];
+    // Check if collection has modules configured in Sanity
+    const hasModules = sanityCollection?.modules && sanityCollection.modules.length > 0;
+
+    // If modules exist, render them instead of the default layout
+    if (hasModules) {
+      return (
+        <main className="min-h-screen">
+          <ModuleRenderer modules={sanityCollection.modules || []} />
+        </main>
+      );
+    }
+
+    // Default collection layout (when no modules are configured)
+    // Get products and filter out hidden ones
+    const allProducts = collection.products?.edges?.map((edge) => edge.node) || [];
+    const products = filterHiddenProducts(allProducts, hiddenHandles);
 
     return (
       <main className="min-h-screen">
@@ -53,6 +80,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ han
                   src={collection.image.url}
                   alt={collection.image.altText || collection.title}
                   fill
+                  sizes="100vw"
                   className="object-cover"
                   priority
                 />
@@ -117,6 +145,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ han
                                 src={product.featuredImage.url}
                                 alt={product.featuredImage.altText || product.title}
                                 fill
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                               />
                               {!product.availableForSale && (

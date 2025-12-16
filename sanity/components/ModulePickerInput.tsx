@@ -131,7 +131,11 @@ const SelectModuleModal = ({
     // Blog
     blogFeaturedPost: 'blog', blogGrid: 'blog', blogList: 'blog', blogCarousel: 'blog', blogMinimal: 'blog',
     // Form
-    formContact: 'form', formNewsletter: 'form', formWithImage: 'form', formMultiStep: 'form',
+    formContact: 'form', formNewsletter: 'form', formWithImage: 'form', formMultiStep: 'form', formDynamic: 'form',
+    // E-commerce
+    productHero: 'ecommerce', productGrid: 'ecommerce', productCarousel: 'ecommerce',
+    featuredProduct: 'ecommerce', collectionGrid: 'ecommerce', relatedProducts: 'ecommerce',
+    recentlyViewed: 'ecommerce', trustBadges: 'ecommerce',
     // Content (NEW)
     richTextBlock: 'content', quote: 'content', statsCounter: 'content', comparisonTable: 'content',
     // Media (NEW)
@@ -144,6 +148,8 @@ const SelectModuleModal = ({
     awards: 'trust', pressMentions: 'trust', caseStudyCards: 'trust', integrationGrid: 'trust',
     // Utility (NEW)
     spacer: 'utility', anchorPoint: 'utility', banner: 'utility', downloadCards: 'utility', multiColumn: 'utility',
+    // Account
+    'account.login': 'account',
   }
 
   // Get category for a module
@@ -161,6 +167,7 @@ const SelectModuleModal = ({
 
   const categoryOrder = [
     'hero',
+    'ecommerce',
     'features',
     'content',
     'media',
@@ -177,6 +184,7 @@ const SelectModuleModal = ({
     'gallery',
     'blog',
     'form',
+    'account',
     'utility'
   ]
 
@@ -214,6 +222,7 @@ const SelectModuleModal = ({
             content: 'Content & Text',
             media: 'Media & Embeds',
             interactive: 'Interactive',
+            ecommerce: 'E-Commerce',
             pricing: 'Pricing',
             testimonials: 'Testimonials',
             cta: 'Call to Action',
@@ -226,6 +235,7 @@ const SelectModuleModal = ({
             gallery: 'Gallery',
             blog: 'Blog',
             form: 'Forms',
+            account: 'Account',
             utility: 'Utility'
           }
           const categoryTitle = categoryTitles[category] || category.charAt(0).toUpperCase() + category.slice(1)
