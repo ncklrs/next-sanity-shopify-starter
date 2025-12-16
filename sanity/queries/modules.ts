@@ -1166,6 +1166,205 @@ const multiColumnProjection = `{
   reverseOnMobile
 }`;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// E-commerce Module Projections
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Shared product card projection (for dereferencing products)
+const productCardFields = `{
+  _key,
+  "name": store.title,
+  "slug": store.slug.current,
+  "price": store.priceRange.minVariantPrice,
+  "compareAtPrice": store.priceRange.maxVariantPrice,
+  "image": { "src": store.previewImageUrl, "alt": store.title },
+  "category": store.productType,
+  "availableForSale": store.status == "active" && !store.isDeleted,
+  "tags": store.tags
+}`;
+
+// Product Hero - Full product detail section
+const productHeroProjection = `{
+  _type,
+  _key,
+  badge,
+  "productName": product->store.title,
+  "price": product->store.priceRange.minVariantPrice,
+  "compareAtPrice": product->store.priceRange.maxVariantPrice,
+  "description": product->store.description,
+  "images": [{ "src": product->store.previewImageUrl, "alt": product->store.title }],
+  "variants": product->store.options[]{
+    "id": _key,
+    "name": name,
+    "options": values
+  },
+  "inStock": product->store.status == "active" && !product->store.isDeleted,
+  trustBadges[]{ icon, text },
+  ctaText,
+  spacing,
+  backgroundColor
+}`;
+
+// Product Grid - Display multiple products
+const productGridProjection = `{
+  _type,
+  _key,
+  badge,
+  heading,
+  subheading,
+  source,
+  columns,
+  showFilters,
+  productsPerPage,
+  maxProducts,
+  spacing,
+  backgroundColor,
+  // Manual selection - dereference each product
+  "products": select(
+    source == "manual" || source == null => products[]{
+      _key,
+      "name": product->store.title,
+      "slug": product->store.slug.current,
+      "price": product->store.priceRange.minVariantPrice,
+      "compareAtPrice": product->store.priceRange.maxVariantPrice,
+      "image": { "src": product->store.previewImageUrl, "alt": product->store.title },
+      "category": product->store.productType,
+      "availableForSale": product->store.status == "active" && !product->store.isDeleted,
+      "badge": displayOverrides.badge
+    },
+    // Collection source - fetch up to 24, let component limit based on maxProducts
+    source == "collection" => *[_type == "product" && references(^.collection._ref) && !store.isDeleted && store.status == "active"][0...24]${productCardFields},
+    // Tag source
+    source == "tag" => *[_type == "product" && ^.tag in store.tags && !store.isDeleted && store.status == "active"][0...24]${productCardFields},
+    // Featured source
+    source == "featured" => *[_type == "product" && "featured" in store.tags && !store.isDeleted && store.status == "active"][0...24]${productCardFields}
+  )
+}`;
+
+// Product Carousel - Scrollable product display
+const productCarouselProjection = `{
+  _type,
+  _key,
+  badge,
+  heading,
+  subheading,
+  source,
+  autoplay,
+  autoplayInterval,
+  maxProducts,
+  spacing,
+  backgroundColor,
+  // Manual selection - dereference each product
+  "products": select(
+    source == "manual" || source == null => products[]{
+      _key,
+      "name": product->store.title,
+      "slug": product->store.slug.current,
+      "price": product->store.priceRange.minVariantPrice,
+      "compareAtPrice": product->store.priceRange.maxVariantPrice,
+      "image": { "src": product->store.previewImageUrl, "alt": product->store.title },
+      "availableForSale": product->store.status == "active" && !product->store.isDeleted,
+      "badge": displayOverrides.badge
+    },
+    // Collection source - fetch up to 16, let component limit based on maxProducts
+    source == "collection" => *[_type == "product" && references(^.collection._ref) && !store.isDeleted && store.status == "active"][0...16]${productCardFields},
+    // Tag source
+    source == "tag" => *[_type == "product" && ^.tag in store.tags && !store.isDeleted && store.status == "active"][0...16]${productCardFields},
+    // Featured source
+    source == "featured" => *[_type == "product" && "featured" in store.tags && !store.isDeleted && store.status == "active"][0...16]${productCardFields}
+  )
+}`;
+
+// Featured Product - Highlight a single product
+const featuredProductProjection = `{
+  _type,
+  _key,
+  badge,
+  "productName": product->store.title,
+  "description": coalesce(descriptionOverride, product->store.description),
+  "price": product->store.priceRange.minVariantPrice,
+  "compareAtPrice": product->store.priceRange.maxVariantPrice,
+  "image": { "src": product->store.previewImageUrl, "alt": product->store.title, "width": 800, "height": 800 },
+  "inStock": product->store.status == "active" && !product->store.isDeleted,
+  features[]{ icon, text },
+  ctaText,
+  ctaLink,
+  imagePosition,
+  spacing,
+  backgroundColor
+}`;
+
+// Collection Grid - Display product collections
+const collectionGridProjection = `{
+  _type,
+  _key,
+  badge,
+  heading,
+  subheading,
+  columns,
+  spacing,
+  backgroundColor,
+  "collections": collections[]{
+    _key,
+    "name": collection->store.title,
+    "slug": collection->store.slug.current,
+    "description": coalesce(displayOverrides.descriptionOverride, collection->store.descriptionHtml),
+    "image": { "src": collection->store.imageUrl, "alt": collection->store.title },
+    "productCount": count(*[_type == "product" && references(^.collection._ref) && !store.isDeleted])
+  }
+}`;
+
+// Related Products - Show related items
+const relatedProductsProjection = `{
+  _type,
+  _key,
+  heading,
+  source,
+  maxProducts,
+  layout,
+  spacing,
+  backgroundColor,
+  // Manual selection - dereference each product
+  "products": select(
+    source == "manual" || source == null => products[]{
+      _key,
+      "name": product->store.title,
+      "slug": product->store.slug.current,
+      "price": product->store.priceRange.minVariantPrice,
+      "compareAtPrice": product->store.priceRange.maxVariantPrice,
+      "image": { "src": product->store.previewImageUrl, "alt": product->store.title },
+      "availableForSale": product->store.status == "active" && !product->store.isDeleted,
+      "badge": displayOverrides.badge
+    },
+    // For sameCollection/sameTags, these require context from the current product page
+    // The component will handle fetching based on current product context
+    []
+  )
+}`;
+
+// Recently Viewed - User's recently viewed products (client-side, minimal projection)
+const recentlyViewedProjection = `{
+  _type,
+  _key,
+  heading,
+  maxItems,
+  storageKey,
+  spacing,
+  backgroundColor
+}`;
+
+// Trust Badges - Display trust signals
+const trustBadgesProjection = `{
+  _type,
+  _key,
+  heading,
+  badges[]{ icon, text, description },
+  layout,
+  variant,
+  spacing,
+  backgroundColor
+}`;
+
 /**
  * Combined module projection that handles all module types
  * Uses select() to apply the correct projection based on _type
@@ -1243,7 +1442,16 @@ export const moduleProjection = `{
   _type == "anchorPoint" => ${anchorPointProjection},
   _type == "banner" => ${bannerProjection},
   _type == "downloadCards" => ${downloadCardsProjection},
-  _type == "multiColumn" => ${multiColumnProjection}
+  _type == "multiColumn" => ${multiColumnProjection},
+  // E-commerce modules
+  _type == "productHero" => ${productHeroProjection},
+  _type == "productGrid" => ${productGridProjection},
+  _type == "productCarousel" => ${productCarouselProjection},
+  _type == "featuredProduct" => ${featuredProductProjection},
+  _type == "collectionGrid" => ${collectionGridProjection},
+  _type == "relatedProducts" => ${relatedProductsProjection},
+  _type == "recentlyViewed" => ${recentlyViewedProjection},
+  _type == "trustBadges" => ${trustBadgesProjection}
 }`;
 
 // Export individual projections for reuse
@@ -1336,6 +1544,15 @@ export const moduleProjections = {
   banner: bannerProjection,
   downloadCards: downloadCardsProjection,
   multiColumn: multiColumnProjection,
+  // E-commerce
+  productHero: productHeroProjection,
+  productGrid: productGridProjection,
+  productCarousel: productCarouselProjection,
+  featuredProduct: featuredProductProjection,
+  collectionGrid: collectionGridProjection,
+  relatedProducts: relatedProductsProjection,
+  recentlyViewed: recentlyViewedProjection,
+  trustBadges: trustBadgesProjection,
 };
 
 // Export shared fields for use in other queries

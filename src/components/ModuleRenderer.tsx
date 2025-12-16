@@ -972,15 +972,23 @@ const moduleTransformers: Record<string, (data: any) => any> = {
 
   productHero: (data) => ({
     ...data,
-    images: (data.images || []).map((img: any) => {
-      let src = "";
-      if (img.asset?.url) {
-        src = img.asset.url;
-      } else if (img.asset?._ref) {
-        src = urlFor(img).width(800).url();
-      }
-      return { src, alt: img.alt || "", width: 800, height: 800 };
-    }),
+    // Images come pre-transformed from GROQ with src/alt, filter out invalid ones
+    images: (data.images || [])
+      .filter((img: any) => img?.src)
+      .map((img: any) => ({
+        src: img.src,
+        alt: img.alt || data.productName || "",
+        width: 800,
+        height: 800,
+      })),
+    // Ensure variants have options array (can be null from Shopify)
+    variants: (data.variants || [])
+      .filter((v: any) => v?.name)
+      .map((v: any) => ({
+        id: v.id || v.name,
+        name: v.name,
+        options: v.options || [],
+      })),
   }),
 
   productGrid: (data) => ({
@@ -991,15 +999,13 @@ const moduleTransformers: Record<string, (data: any) => any> = {
       slug: p.slug,
       price: p.price,
       compareAtPrice: p.compareAtPrice,
-      image: p.image?.asset?.url
-        ? { src: p.image.asset.url, alt: p.image.alt || p.name }
-        : p.image?.asset?._ref
-        ? { src: urlFor(p.image).width(600).url(), alt: p.image.alt || p.name }
-        : undefined,
+      // Image comes pre-transformed from GROQ with {src, alt}
+      image: p.image?.src ? { src: p.image.src, alt: p.image.alt || p.name } : undefined,
       badge: p.badge,
       rating: p.rating,
       reviewCount: p.reviewCount,
       category: p.category,
+      availableForSale: p.availableForSale,
     })),
   }),
 
@@ -1011,23 +1017,20 @@ const moduleTransformers: Record<string, (data: any) => any> = {
       slug: p.slug,
       price: p.price,
       compareAtPrice: p.compareAtPrice,
-      image: p.image?.asset?.url
-        ? { src: p.image.asset.url, alt: p.image.alt || p.name }
-        : p.image?.asset?._ref
-        ? { src: urlFor(p.image).width(600).url(), alt: p.image.alt || p.name }
-        : undefined,
+      // Image comes pre-transformed from GROQ with {src, alt}
+      image: p.image?.src ? { src: p.image.src, alt: p.image.alt || p.name } : undefined,
       badge: p.badge,
       rating: p.rating,
       reviewCount: p.reviewCount,
+      availableForSale: p.availableForSale,
     })),
   }),
 
   featuredProduct: (data) => ({
     ...data,
-    image: data.image?.asset?.url
-      ? { src: data.image.asset.url, alt: data.image.alt || data.productName, width: 800, height: 800 }
-      : data.image?.asset?._ref
-      ? { src: urlFor(data.image).width(800).url(), alt: data.image.alt || data.productName, width: 800, height: 800 }
+    // Image comes pre-transformed from GROQ with {src, alt}
+    image: data.image?.src
+      ? { src: data.image.src, alt: data.image.alt || data.productName, width: 800, height: 800 }
       : undefined,
   }),
 
@@ -1038,11 +1041,8 @@ const moduleTransformers: Record<string, (data: any) => any> = {
       name: c.name,
       slug: c.slug,
       description: c.description,
-      image: c.image?.asset?.url
-        ? { src: c.image.asset.url, alt: c.image.alt || c.name }
-        : c.image?.asset?._ref
-        ? { src: urlFor(c.image).width(600).url(), alt: c.image.alt || c.name }
-        : undefined,
+      // Image comes pre-transformed from GROQ with {src, alt}
+      image: c.image?.src ? { src: c.image.src, alt: c.image.alt || c.name } : undefined,
       productCount: c.productCount,
     })),
   }),
@@ -1055,13 +1055,11 @@ const moduleTransformers: Record<string, (data: any) => any> = {
       slug: p.slug,
       price: p.price,
       compareAtPrice: p.compareAtPrice,
-      image: p.image?.asset?.url
-        ? { src: p.image.asset.url, alt: p.image.alt || p.name }
-        : p.image?.asset?._ref
-        ? { src: urlFor(p.image).width(600).url(), alt: p.image.alt || p.name }
-        : undefined,
+      // Image comes pre-transformed from GROQ with {src, alt}
+      image: p.image?.src ? { src: p.image.src, alt: p.image.alt || p.name } : undefined,
       badge: p.badge,
       rating: p.rating,
+      availableForSale: p.availableForSale,
     })),
   }),
 

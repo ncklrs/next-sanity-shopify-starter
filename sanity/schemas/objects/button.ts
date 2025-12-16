@@ -19,6 +19,7 @@ export const button = defineType({
         list: [
           { title: "Internal Page", value: "internal" },
           { title: "External URL", value: "external" },
+          { title: "Relative URL", value: "relative" },
         ],
         layout: "radio",
       },
@@ -29,7 +30,7 @@ export const button = defineType({
       name: "internalLink",
       title: "Internal Link",
       type: "reference",
-      to: [{ type: "page" }],
+      to: [{ type: "page" }, { type: "product" }, { type: "collection" }],
       hidden: ({ parent }) => parent?.linkType !== "internal",
       validation: (Rule) =>
         Rule.custom((value, context) => {
@@ -54,6 +55,24 @@ export const button = defineType({
           return true;
         }).uri({
           scheme: ["http", "https", "mailto", "tel"],
+        }),
+    }),
+    defineField({
+      name: "relativeUrl",
+      title: "Relative URL",
+      type: "string",
+      description: "e.g., /products, /collections, /about",
+      hidden: ({ parent }) => parent?.linkType !== "relative",
+      validation: (Rule) =>
+        Rule.custom((value, context) => {
+          const parent = context.parent as { linkType?: string };
+          if (parent?.linkType === "relative" && !value) {
+            return "Relative URL is required";
+          }
+          if (value && !value.startsWith("/")) {
+            return "Relative URL must start with /";
+          }
+          return true;
         }),
     }),
     defineField({

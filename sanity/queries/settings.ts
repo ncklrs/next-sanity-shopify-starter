@@ -6,46 +6,68 @@
  */
 
 // Base nav link projection (without children)
+// Fetches _type and appropriate slug based on document type (page vs product/collection)
 const baseNavLinkProjection = `{
   label,
   linkType,
-  internalLink->{ slug },
+  internalLink->{
+    _type,
+    "slug": select(
+      _type == "page" => slug,
+      _type == "product" => { "current": store.slug.current },
+      _type == "collection" => { "current": store.slug.current }
+    )
+  },
   externalUrl,
+  relativeUrl,
   anchor,
   description,
   icon
+}`;
+
+// Internal link projection for reuse
+const internalLinkProjection = `{
+  _type,
+  "slug": select(
+    _type == "page" => slug,
+    _type == "product" => { "current": store.slug.current },
+    _type == "collection" => { "current": store.slug.current }
+  )
 }`;
 
 // Navigation link projection with children and columns support
 const navLinkProjection = `{
   label,
   linkType,
-  internalLink->{ slug },
+  internalLink->${internalLinkProjection},
   externalUrl,
+  relativeUrl,
   anchor,
   description,
   icon,
   dropdownStyle,
-  children[]${`{
+  children[]{
     label,
     linkType,
-    internalLink->{ slug },
+    internalLink->${internalLinkProjection},
     externalUrl,
+    relativeUrl,
     anchor,
     description,
     icon
-  }`},
+  },
   columns[]{
     title,
-    links[]${`{
+    links[]{
       label,
       linkType,
-      internalLink->{ slug },
+      internalLink->${internalLinkProjection},
       externalUrl,
+      relativeUrl,
       anchor,
       description,
       icon
-    }`}
+    }
   },
   featuredItem{
     title,
@@ -59,8 +81,9 @@ const navLinkProjection = `{
     link{
       label,
       linkType,
-      internalLink->{ slug },
+      internalLink->${internalLinkProjection},
       externalUrl,
+      relativeUrl,
       anchor
     }
   }
@@ -70,8 +93,9 @@ const navLinkProjection = `{
 const ctaButtonProjection = `{
   label,
   linkType,
-  internalLink->{ slug },
+  internalLink->${internalLinkProjection},
   externalUrl,
+  relativeUrl,
   openInNewTab,
   variant,
   size,

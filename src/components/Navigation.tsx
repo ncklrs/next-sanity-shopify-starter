@@ -28,9 +28,10 @@ const BUTTON_SIZE_CLASSES: Record<string, string> = {
 
 interface BaseNavLink {
   label: string;
-  linkType: "internal" | "external" | "anchor";
-  internalLink?: { slug: { current: string } };
+  linkType: "internal" | "external" | "relative" | "anchor";
+  internalLink?: { _type?: string; slug: { current: string } };
   externalUrl?: string;
+  relativeUrl?: string;
   anchor?: string;
   description?: string;
   icon?: string;
@@ -57,9 +58,10 @@ interface NavLink extends BaseNavLink {
 
 interface CtaButton {
   label: string;
-  linkType: "internal" | "external";
-  internalLink?: { slug: { current: string } };
+  linkType: "internal" | "external" | "relative";
+  internalLink?: { _type?: string; slug: { current: string } };
   externalUrl?: string;
+  relativeUrl?: string;
   openInNewTab?: boolean;
   variant: "primary" | "secondary" | "ghost" | "outline";
   size: "sm" | "md" | "lg";
@@ -82,12 +84,31 @@ export interface NavigationProps {
   };
 }
 
+function getInternalLinkHref(internalLink?: { _type?: string; slug: { current: string } }) {
+  if (!internalLink?.slug?.current) return "/";
+
+  const slug = internalLink.slug.current;
+
+  // Route based on document type
+  switch (internalLink._type) {
+    case "product":
+      return `/products/${slug}`;
+    case "collection":
+      return `/collections/${slug}`;
+    case "page":
+    default:
+      return `/${slug}`;
+  }
+}
+
 function getNavHref(item: BaseNavLink) {
   switch (item.linkType) {
     case "internal":
-      return item.internalLink?.slug?.current ? `/${item.internalLink.slug.current}` : "/";
+      return getInternalLinkHref(item.internalLink);
     case "external":
       return item.externalUrl || "#";
+    case "relative":
+      return item.relativeUrl || "#";
     case "anchor":
       return item.anchor || "#";
     default:
@@ -96,10 +117,16 @@ function getNavHref(item: BaseNavLink) {
 }
 
 function getCtaHref(button: CtaButton) {
-  if (button.linkType === "internal") {
-    return button.internalLink?.slug?.current ? `/${button.internalLink.slug.current}` : "/";
+  switch (button.linkType) {
+    case "internal":
+      return getInternalLinkHref(button.internalLink);
+    case "external":
+      return button.externalUrl || "#";
+    case "relative":
+      return button.relativeUrl || "#";
+    default:
+      return "#";
   }
-  return button.externalUrl || "#";
 }
 
 function hasDropdown(item: NavLink): boolean {

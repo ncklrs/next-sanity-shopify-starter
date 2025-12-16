@@ -73,22 +73,27 @@ export function ProductHero({
   description,
   rating = 5,
   reviewCount,
-  images = [],
-  variants = [],
-  trustBadges = [],
+  images,
+  variants,
+  trustBadges,
   inStock = true,
   ctaText = "Add to Cart",
   spacing = "xl",
   backgroundColor,
   onAddToCart,
 }: ProductHeroProps) {
+  // Ensure arrays are never null (handle edge cases from GROQ queries)
+  const safeImages = images ?? [];
+  const safeVariants = variants ?? [];
+  const safeTrustBadges = trustBadges ?? [];
+
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
-    variants.forEach(variant => {
+    safeVariants.forEach(variant => {
       if (variant.selectedOption) {
         initial[variant.name] = variant.selectedOption;
-      } else if (variant.options.length > 0) {
+      } else if (variant.options && variant.options.length > 0) {
         initial[variant.name] = variant.options[0];
       }
     });
@@ -126,12 +131,12 @@ export function ProductHero({
           <div className="space-y-4">
             {/* Main Image */}
             <div className="relative aspect-square rounded-2xl overflow-hidden border border-[var(--border)] bg-[var(--surface)]">
-              {images.length > 0 ? (
+              {safeImages.length > 0 ? (
                 <Image
-                  src={images[selectedImage].src}
-                  alt={images[selectedImage].alt}
-                  width={images[selectedImage].width || 800}
-                  height={images[selectedImage].height || 800}
+                  src={safeImages[selectedImage].src}
+                  alt={safeImages[selectedImage].alt}
+                  width={safeImages[selectedImage].width || 800}
+                  height={safeImages[selectedImage].height || 800}
                   className="w-full h-full object-cover"
                   priority
                 />
@@ -149,9 +154,9 @@ export function ProductHero({
             </div>
 
             {/* Thumbnail Gallery */}
-            {images.length > 1 && (
+            {safeImages.length > 1 && (
               <div className="grid grid-cols-4 gap-4">
-                {images.map((image, index) => (
+                {safeImages.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
@@ -223,15 +228,15 @@ export function ProductHero({
             )}
 
             {/* Variants */}
-            {variants.length > 0 && (
+            {safeVariants.length > 0 && (
               <div className="space-y-4">
-                {variants.map((variant) => (
+                {safeVariants.map((variant) => (
                   <div key={variant.id}>
                     <label className="block text-sm font-medium mb-2">
                       {variant.name}
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {variant.options.map((option) => (
+                      {(variant.options || []).map((option) => (
                         <button
                           key={option}
                           onClick={() => handleVariantChange(variant.name, option)}
@@ -284,10 +289,10 @@ export function ProductHero({
             </div>
 
             {/* Trust Badges */}
-            {trustBadges.length > 0 && (
+            {safeTrustBadges.length > 0 && (
               <div className="pt-6 border-t border-[var(--border)]">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {trustBadges.map((badge, index) => (
+                  {safeTrustBadges.map((badge, index) => (
                     <div
                       key={index}
                       className="flex items-center gap-3 text-sm text-[var(--foreground-muted)]"

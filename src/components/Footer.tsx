@@ -3,13 +3,15 @@ import { AuroraLogo } from "@/components/icons";
 
 interface NavLink {
   label: string;
-  linkType: "internal" | "external" | "anchor";
+  linkType: "internal" | "external" | "relative" | "anchor";
   internalLink?: {
+    _type?: string;
     slug: {
       current: string;
     };
   };
   externalUrl?: string;
+  relativeUrl?: string;
   anchor?: string;
 }
 
@@ -62,12 +64,31 @@ const defaultLinkColumns: LinkColumn[] = [
 const currentYear = new Date().getFullYear();
 
 export function Footer({ settings }: FooterProps) {
+  const getInternalLinkHref = (internalLink?: NavLink["internalLink"]) => {
+    if (!internalLink?.slug?.current) return "/";
+
+    const slug = internalLink.slug.current;
+
+    // Route based on document type
+    switch (internalLink._type) {
+      case "product":
+        return `/products/${slug}`;
+      case "collection":
+        return `/collections/${slug}`;
+      case "page":
+      default:
+        return `/${slug}`;
+    }
+  };
+
   const getHref = (item: NavLink) => {
     switch (item.linkType) {
       case "internal":
-        return item.internalLink?.slug?.current ? `/${item.internalLink.slug.current}` : "/";
+        return getInternalLinkHref(item.internalLink);
       case "external":
         return item.externalUrl || "#";
+      case "relative":
+        return item.relativeUrl || "#";
       case "anchor":
         return item.anchor || "#";
       default:

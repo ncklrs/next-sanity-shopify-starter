@@ -29,6 +29,7 @@ const baseNavLinkFields = [
       list: [
         { title: "Internal Page", value: "internal" },
         { title: "External URL", value: "external" },
+        { title: "Relative URL", value: "relative" },
         { title: "Anchor Link", value: "anchor" },
       ],
     },
@@ -38,7 +39,7 @@ const baseNavLinkFields = [
     name: "internalLink",
     title: "Internal Page",
     type: "reference",
-    to: [{ type: "page" }],
+    to: [{ type: "page" }, { type: "product" }, { type: "collection" }],
     hidden: ({ parent }: { parent?: { linkType?: string } }) =>
       parent?.linkType !== "internal",
   },
@@ -48,6 +49,25 @@ const baseNavLinkFields = [
     type: "url",
     hidden: ({ parent }: { parent?: { linkType?: string } }) =>
       parent?.linkType !== "external",
+  },
+  {
+    name: "relativeUrl",
+    title: "Relative URL",
+    type: "string",
+    description: "e.g., /products, /collections, /about",
+    hidden: ({ parent }: { parent?: { linkType?: string } }) =>
+      parent?.linkType !== "relative",
+    validation: (rule: any) =>
+      rule.custom((value: string | undefined, context: any) => {
+        const parent = context.parent;
+        if (parent?.linkType === "relative" && !value) {
+          return "Relative URL is required";
+        }
+        if (value && !value.startsWith("/")) {
+          return "Relative URL must start with /";
+        }
+        return true;
+      }),
   },
   {
     name: "anchor",
