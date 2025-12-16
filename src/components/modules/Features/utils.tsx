@@ -1,5 +1,96 @@
 import * as Icons from "../../icons";
 
+// Map common icon name variations to our icon component names
+// This handles cases where Sanity editors might use different naming conventions
+const iconNameMap: Record<string, string> = {
+  // Shopping/Commerce
+  cart: "shoppingCart",
+  "shopping-cart": "shoppingCart",
+  shoppingcart: "shoppingCart",
+
+  // Navigation
+  "arrow-right": "arrowRight",
+  "arrow-left": "arrowLeft",
+  "chevron-right": "chevronRight",
+  "chevron-left": "chevronLeft",
+  "chevron-down": "chevronDown",
+  "chevron-up": "chevronUp",
+
+  // Common variations
+  "bar-chart": "barChart",
+  barchart: "barChart",
+  chart: "barChart",
+  "file-text": "fileText",
+  filetext: "fileText",
+  document: "fileText",
+  "help-circle": "helpCircle",
+  help: "helpCircle",
+  "message-square": "messageSquare",
+  message: "messageSquare",
+  chat: "messageSquare",
+  "mouse-pointer": "mousePointer",
+  cursor: "mousePointer",
+
+  // Lucide naming to our naming
+  layouttemplate: "grid",
+  layout: "grid",
+  pencil: "type",
+  edit: "type",
+  eye: "globe",
+  view: "globe",
+  filecode: "code",
+  "file-code": "code",
+
+  // Direct mappings (already correct but lowercase)
+  sparkles: "sparkles",
+  heart: "heart",
+  rocket: "rocket",
+  shield: "shield",
+  zap: "zap",
+  layers: "layers",
+  code: "code",
+  users: "users",
+  check: "check",
+  globe: "globe",
+  play: "play",
+  star: "star",
+  menu: "menu",
+  x: "x",
+  close: "x",
+  quote: "quote",
+  type: "type",
+  video: "video",
+  award: "award",
+  bell: "bell",
+  building: "building",
+  creditcard: "creditCard",
+  "credit-card": "creditCard",
+  database: "database",
+  grid: "grid",
+  image: "image",
+  mail: "mail",
+  email: "mail",
+  paintbrush: "paintbrush",
+  brush: "paintbrush",
+  puzzle: "puzzle",
+  settings: "settings",
+  cog: "settings",
+  gear: "settings",
+  trash: "trash",
+  delete: "trash",
+  minus: "minus",
+  plus: "plus",
+  add: "plus",
+  package: "package",
+  box: "package",
+  truck: "truck",
+  delivery: "truck",
+  shipping: "truck",
+  search: "search",
+  clock: "clock",
+  time: "clock",
+};
+
 export function getSpacingClass(spacing?: string): string {
   const spacingMap: Record<string, string> = {
     none: "",
@@ -41,8 +132,12 @@ export function getGridColumnsClass(columns?: number): string {
 export function renderIcon(iconName?: string, props?: React.SVGProps<SVGSVGElement>) {
   if (!iconName) return null;
 
+  // Normalize the icon name: lowercase and check mapping
+  const normalizedName = iconName.toLowerCase().trim();
+  const mappedName = iconNameMap[normalizedName] || normalizedName;
+
   // Convert icon name to component name (e.g., "sparkles" -> "SparklesIcon")
-  const componentName = `${iconName.charAt(0).toUpperCase()}${iconName.slice(1)}Icon`;
+  const componentName = `${mappedName.charAt(0).toUpperCase()}${mappedName.slice(1)}Icon`;
 
   // Type-safe icon lookup
   const IconComponent = Icons[componentName as keyof typeof Icons] as React.ComponentType<
@@ -50,7 +145,10 @@ export function renderIcon(iconName?: string, props?: React.SVGProps<SVGSVGEleme
   >;
 
   if (!IconComponent) {
-    console.warn(`Icon "${iconName}" not found. Available icons:`, Object.keys(Icons));
+    // Only warn in development
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`Icon "${iconName}" (mapped to "${mappedName}") not found.`);
+    }
     return null;
   }
 
