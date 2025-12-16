@@ -63,7 +63,7 @@ export default function FeaturesAlternating({
           )}
           <h2 className="heading-lg mb-4">
             {beforeGradient}
-            {gradientPart && <span className="text-gradient">{gradientPart}</span>}
+            {gradientPart && <span className="text-[var(--gold)]">{gradientPart}</span>}
             {afterGradient}
           </h2>
           {subheading && <p className="body-lg">{subheading}</p>}
@@ -135,9 +135,9 @@ function FeatureRow({
           <ul className="space-y-3">
             {(feature.bullets || feature.features || []).map((bullet, bulletIndex) => (
               <li key={bulletIndex} className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-5 h-5 mt-0.5 rounded-full bg-[var(--gradient-primary-soft)] flex items-center justify-center">
+                <div className="flex-shrink-0 w-5 h-5 mt-0.5 rounded-full bg-[var(--gold-light)] flex items-center justify-center">
                   {renderIcon("check", {
-                    className: "w-3 h-3 text-[var(--accent-violet)]",
+                    className: "w-3 h-3 text-[var(--gold-dark)]",
                     "aria-hidden": "true",
                   })}
                 </div>
@@ -152,7 +152,7 @@ function FeatureRow({
 
       {/* Image Side */}
       <div className={`relative ${isReversed ? "lg:order-1" : ""}`}>
-        <div className="relative rounded-2xl overflow-hidden border border-[var(--border)] shadow-xl">
+        <div className="relative overflow-hidden border border-[var(--border-hairline)] shadow-elevated">
           {feature.image && (
             <img
               src={getImageUrl(feature.image)}
@@ -161,23 +161,7 @@ function FeatureRow({
               loading="lazy"
             />
           )}
-          {/* Glow Effect */}
-          <div
-            className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.15), transparent 70%)",
-            }}
-          />
         </div>
-
-        {/* Decorative Border Gradient */}
-        <div
-          className="absolute -inset-0.5 rounded-2xl opacity-20 blur-sm -z-10"
-          style={{
-            background: "var(--gradient-primary)",
-          }}
-        />
       </div>
     </div>
   );

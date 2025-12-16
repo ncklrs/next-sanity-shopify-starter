@@ -52,7 +52,7 @@ export default function FeaturesGrid({
           )}
           <h2 className="heading-lg mb-4">
             {beforeGradient}
-            {gradientPart && <span className="text-gradient">{gradientPart}</span>}
+            {gradientPart && <span className="text-[var(--gold)]">{gradientPart}</span>}
             {afterGradient}
           </h2>
           {subheading && <p className="body-lg">{subheading}</p>}
@@ -86,7 +86,7 @@ export default function FeaturesGrid({
               {feature.link && (
                 <a
                   href={feature.link.href}
-                  className="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-[var(--accent-violet)] hover:text-[var(--accent-cyan)] transition-colors"
+                  className="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-[var(--gold)] hover:text-[var(--gold-dark)] transition-colors"
                 >
                   {feature.link.text}
                   {renderIcon("arrowRight", {

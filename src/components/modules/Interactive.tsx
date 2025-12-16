@@ -144,7 +144,7 @@ const portableTextComponents = {
     link: ({ children, value }: any) => (
       <a
         href={value.href}
-        className="text-[var(--accent-violet)] hover:text-[var(--accent-cyan)] transition-colors underline"
+        className="text-[var(--gold)] hover:text-[var(--gold-dark)] transition-colors underline"
         target={value.blank ? "_blank" : undefined}
         rel={value.blank ? "noopener noreferrer" : undefined}
       >
@@ -172,7 +172,7 @@ const renderIcon = (iconName?: string) => {
   // For now, return a placeholder circle with the icon name
   // In production, you'd map icon names to actual icon components
   return (
-    <div className="w-6 h-6 rounded-full bg-[var(--accent-violet)]/20 flex items-center justify-center text-xs text-[var(--accent-violet)] font-medium">
+    <div className="w-6 h-6 rounded-full bg-[var(--gold-light)] flex items-center justify-center text-xs text-[var(--gold-dark)] font-medium">
       {iconName.charAt(0).toUpperCase()}
     </div>
   );
@@ -181,9 +181,9 @@ const renderIcon = (iconName?: string) => {
 const getBackgroundStyle = (backgroundColor?: string) => {
   switch (backgroundColor) {
     case "muted":
-      return { backgroundColor: "var(--background-secondary)" };
+      return { backgroundColor: "var(--background-warm)" };
     case "accent":
-      return { background: "linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(139, 92, 246, 0.05) 50%, rgba(236, 72, 153, 0.05) 100%)" };
+      return { backgroundColor: "var(--background-cream)" };
     default:
       return undefined;
   }
@@ -242,25 +242,25 @@ export function Tabs({
   const getTabButtonClass = (index: number) => {
     const isActive = activeTab === index;
     const baseClass =
-      "transition-all duration-[var(--transition-base)] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-violet)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]";
+      "transition-all duration-[var(--transition-base)] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--gold)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]";
 
     switch (variant) {
       case "pills":
         return `${baseClass} px-6 py-3 rounded-full ${
           isActive
-            ? "bg-[var(--accent-violet)] text-white shadow-lg shadow-[var(--accent-violet)]/30"
+            ? "bg-[var(--gold)] text-white shadow-lg shadow-[var(--gold)]/30"
             : "bg-[var(--surface)] text-[var(--foreground-muted)] border border-[var(--border)] hover:bg-[var(--surface-hover)] hover:text-[var(--foreground)] hover:border-[var(--border-hover)]"
         }`;
       case "underline":
         return `${baseClass} px-4 py-3 border-b-2 ${
           isActive
-            ? "border-[var(--accent-violet)] text-[var(--foreground)]"
+            ? "border-[var(--gold)] text-[var(--foreground)]"
             : "border-transparent text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:border-[var(--border-hover)]"
         }`;
       case "vertical":
         return `${baseClass} px-6 py-4 rounded-lg text-left w-full ${
           isActive
-            ? "bg-[var(--accent-violet)]/10 text-[var(--foreground)] border-l-2 border-[var(--accent-violet)]"
+            ? "bg-[var(--gold)]/10 text-[var(--foreground)] border-l-2 border-[var(--gold)]"
             : "bg-[var(--surface)] text-[var(--foreground-muted)] border-l-2 border-transparent hover:bg-[var(--surface-hover)] hover:text-[var(--foreground)]"
         }`;
       default:
@@ -502,19 +502,19 @@ export function Steps({
     switch (variant) {
       case "icons":
         return (
-          <div className="w-12 h-12 rounded-full bg-[var(--accent-violet)]/20 border-2 border-[var(--accent-violet)] flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 rounded-full bg-[var(--gold-light)] border-2 border-[var(--gold)] flex items-center justify-center flex-shrink-0">
             {renderIcon(step.icon)}
           </div>
         );
       case "timeline":
         return (
           <div className="relative flex-shrink-0">
-            <div className="w-4 h-4 rounded-full bg-[var(--accent-violet)] border-4 border-[var(--background)]" />
+            <div className="w-4 h-4 rounded-full bg-[var(--gold)] border-4 border-[var(--background)]" />
           </div>
         );
       default:
         return (
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--accent-cyan)] via-[var(--accent-violet)] to-[var(--accent-rose)] flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-lg shadow-[var(--accent-violet)]/30">
+          <div className="w-12 h-12 rounded-full bg-[var(--foreground)] flex items-center justify-center text-[var(--background)] text-xl font-bold flex-shrink-0 shadow-lg shadow-[var(--foreground)]/20">
             {index + 1}
           </div>
         );
@@ -526,16 +526,16 @@ export function Steps({
 
     if (variant === "timeline") {
       return isHorizontal ? (
-        <div className="flex-1 h-0.5 bg-gradient-to-r from-[var(--accent-violet)] to-[var(--accent-cyan)] mx-4" />
+        <div className="flex-1 h-0.5 bg-[var(--border-medium)] mx-4" />
       ) : (
-        <div className="w-0.5 h-12 bg-gradient-to-b from-[var(--accent-violet)] to-[var(--accent-cyan)] mx-auto" />
+        <div className="w-0.5 h-12 bg-[var(--border-medium)] mx-auto" />
       );
     }
 
     return isHorizontal ? (
-      <div className="flex-1 h-0.5 bg-white/20 mx-4 mt-6" />
+      <div className="flex-1 h-0.5 bg-[var(--border-light)] mx-4 mt-6" />
     ) : (
-      <div className="w-0.5 h-12 bg-white/20 mx-auto" />
+      <div className="w-0.5 h-12 bg-[var(--border-light)] mx-auto" />
     );
   };
 
@@ -571,7 +571,7 @@ export function Steps({
                 !isCards &&
                 variant === "timeline" &&
                 index !== steps.length - 1 && (
-                  <div className="absolute left-[7px] top-4 bottom-0 w-0.5 bg-gradient-to-b from-[var(--accent-violet)] to-[var(--accent-cyan)]" />
+                  <div className="absolute left-[7px] top-4 bottom-0 w-0.5 bg-[var(--border-medium)]" />
                 )}
 
               {isCards ? (
@@ -670,7 +670,7 @@ export function Timeline({
           {isVertical ? (
             <div className="relative">
               {/* Vertical timeline line */}
-              <div className="absolute left-[15px] md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[var(--accent-cyan)] via-[var(--accent-violet)] to-[var(--accent-rose)]" />
+              <div className="absolute left-[15px] md:left-1/2 top-0 bottom-0 w-0.5 bg-[var(--border-medium)]" />
 
               {displayEvents.map((event, index) => {
                 const isLeft = isAlternating && index % 2 === 0;
@@ -691,7 +691,7 @@ export function Timeline({
                         isAlternating
                           ? "left-[11px] md:left-1/2 md:-translate-x-1/2"
                           : "left-[11px]"
-                      } w-2 h-2 rounded-full bg-white border-4 border-[var(--accent-violet)] z-10`}
+                      } w-2 h-2 rounded-full bg-[var(--background)] border-4 border-[var(--gold)] z-10`}
                     />
 
                     {/* Date badge */}
@@ -703,7 +703,7 @@ export function Timeline({
                       } ${isRight && isAlternating ? "md:pl-12 md:text-left" : ""}`}
                     >
                       <span
-                        className={`inline-block px-4 py-1.5 rounded-full bg-[var(--accent-violet)]/20 border border-[var(--accent-violet)]/40 text-[var(--accent-violet)] text-sm font-semibold ${
+                        className={`inline-block px-4 py-1.5 bg-[var(--gold-light)] border border-[var(--gold)]/40 text-[var(--gold-dark)] text-sm font-semibold ${
                           isCompact ? "mb-2" : "mb-4"
                         }`}
                       >
@@ -749,7 +749,7 @@ export function Timeline({
                         {event.link && (
                           <a
                             href={event.link.url}
-                            className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent-violet)] hover:text-[var(--accent-cyan)] transition-colors"
+                            className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--gold)] hover:text-[var(--gold-dark)] transition-colors"
                           >
                             {event.link.label}
                             <ChevronRightIcon className="w-4 h-4" />
@@ -765,16 +765,16 @@ export function Timeline({
             // Horizontal timeline
             <div className="relative flex items-start gap-8 min-w-max">
               {/* Horizontal timeline line */}
-              <div className="absolute top-6 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--accent-cyan)] via-[var(--accent-violet)] to-[var(--accent-rose)]" />
+              <div className="absolute top-6 left-0 right-0 h-0.5 bg-[var(--border-medium)]" />
 
               {displayEvents.map((event, index) => (
                 <div key={index} className="relative w-72 flex-shrink-0">
                   {/* Timeline dot */}
-                  <div className="absolute top-[20px] left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-white border-4 border-[var(--accent-violet)] z-10" />
+                  <div className="absolute top-[20px] left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-[var(--background)] border-4 border-[var(--gold)] z-10" />
 
                   {/* Date badge */}
                   <div className="text-center mb-16">
-                    <span className="inline-block px-4 py-1.5 rounded-full bg-[var(--accent-violet)]/20 border border-[var(--accent-violet)]/40 text-[var(--accent-violet)] text-sm font-semibold">
+                    <span className="inline-block px-4 py-1.5 bg-[var(--gold-light)] border border-[var(--gold)]/40 text-[var(--gold-dark)] text-sm font-semibold">
                       {event.date}
                     </span>
                   </div>
@@ -810,7 +810,7 @@ export function Timeline({
                     {event.link && (
                       <a
                         href={event.link.url}
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--accent-violet)] hover:text-[var(--accent-cyan)] transition-colors"
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--gold)] hover:text-[var(--gold-dark)] transition-colors"
                       >
                         {event.link.label}
                         <ChevronRightIcon className="w-4 h-4" />
