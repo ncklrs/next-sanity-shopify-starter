@@ -7,31 +7,32 @@ import { ArrowRightIcon, CheckIcon, PlayIcon } from "@/components/icons";
 import Image from "next/image";
 
 /**
- * Renders a heading with optional gradient highlight text.
+ * Renders a heading with optional highlighted text.
+ * Uses gold accent color for highlights - consistent with MAISON luxury aesthetic.
  * Handles two patterns:
- * 1. gradientText is a substring of heading → splits and highlights that portion
- * 2. gradientText is separate text → concatenates heading + gradientText with highlight
+ * 1. highlightText is a substring of heading → splits and highlights that portion
+ * 2. highlightText is separate text → concatenates heading + highlightText with highlight
  */
-function renderHeadingWithHighlight(heading: string, gradientText?: string): ReactNode {
-  if (!gradientText) return heading;
+function renderHeadingWithHighlight(heading: string, highlightText?: string): ReactNode {
+  if (!highlightText) return heading;
 
-  // Pattern 1: gradientText is within heading - split and highlight
-  if (heading.includes(gradientText)) {
-    const parts = heading.split(gradientText);
+  // Pattern 1: highlightText is within heading - split and highlight
+  if (heading.includes(highlightText)) {
+    const parts = heading.split(highlightText);
     return (
       <>
         {parts[0]}
-        <span className="text-gradient">{gradientText}</span>
+        <span className="text-[var(--gold)]">{highlightText}</span>
         {parts[1]}
       </>
     );
   }
 
-  // Pattern 2: gradientText is separate - concatenate with highlight
+  // Pattern 2: highlightText is separate - concatenate with highlight
   return (
     <>
-      {heading}{heading && gradientText ? " " : ""}
-      <span className="text-gradient">{gradientText}</span>
+      {heading}{heading && highlightText ? " " : ""}
+      <span className="text-[var(--gold)]">{highlightText}</span>
     </>
   );
 }
@@ -94,11 +95,11 @@ export function HeroDefault({
   secondaryCTA,
   primaryButton,
   secondaryButton,
-  backgroundStyle = "gradient-orbs",
+  backgroundStyle = "default",
   alignment = "center",
 }: HeroDefaultProps) {
   // Map Sanity fields to component fields
-  const gradientText = headingGradientText || headingHighlight;
+  const highlightText = headingGradientText || headingHighlight;
   const primary = primaryCTA || (primaryButton?.text ? {
     label: primaryButton.text,
     href: primaryButton.link,
@@ -111,26 +112,25 @@ export function HeroDefault({
   } : undefined);
   const isCenter = alignment === "center";
 
+  // Background style classes - MAISON luxury aesthetic
+  const getBackgroundClass = () => {
+    switch (backgroundStyle) {
+      case "gradient-orbs":
+        return "bg-[var(--background-warm)]";
+      case "grid":
+        return "bg-[var(--background-cream)]";
+      case "particles":
+        return "bg-[var(--background)]";
+      default:
+        return "bg-[var(--background)]";
+    }
+  };
+
   return (
-    <section className="hero">
-      {/* Background Layer */}
-      <div className="hero-background">
-        {backgroundStyle === "gradient-orbs" && (
-          <>
-            <div className="hero-orb hero-orb-1" />
-            <div className="hero-orb hero-orb-2" />
-            <div className="hero-orb hero-orb-3" />
-          </>
-        )}
-        {backgroundStyle === "grid" && <div className="grid-overlay" />}
-        {backgroundStyle === "particles" && (
-          <>
-            <div className="grid-overlay" />
-            <div className="hero-orb hero-orb-1" style={{ opacity: 0.2 }} />
-          </>
-        )}
-        <div className="noise-overlay" />
-      </div>
+    <section className={`hero ${getBackgroundClass()}`}>
+      {/* Subtle grain texture overlay - MAISON signature */}
+      <div className="absolute inset-0 opacity-[0.015] pointer-events-none"
+           style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")" }} />
 
       {/* Content */}
       <div className="container">
@@ -150,7 +150,7 @@ export function HeroDefault({
           <h1
             className="display-xl mt-6 mb-6 animate-fade-in-up animate-delay-100"
           >
-            {renderHeadingWithHighlight(heading, gradientText)}
+            {renderHeadingWithHighlight(heading, highlightText)}
           </h1>
 
           <p
@@ -230,7 +230,7 @@ export function HeroCentered({
   const safeLogos = trustedByLogos ?? [];
 
   // Map Sanity fields
-  const gradientText = headingGradientText || headingHighlight;
+  const highlightText = headingGradientText || headingHighlight;
   const displayCompaniesHeading = trustedByText || companiesHeading;
 
   // Map buttons to consistent format
@@ -244,13 +244,10 @@ export function HeroCentered({
     };
   }).filter(btn => btn.label);
   return (
-    <section className="hero">
-      {/* Background */}
-      <div className="hero-background">
-        <div className="hero-orb hero-orb-1" />
-        <div className="hero-orb hero-orb-2" />
-        <div className="noise-overlay" />
-      </div>
+    <section className="hero bg-[var(--background-warm)]">
+      {/* Subtle grain texture overlay - MAISON signature */}
+      <div className="absolute inset-0 opacity-[0.015] pointer-events-none"
+           style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")" }} />
 
       {/* Content */}
       <div className="container">
@@ -266,7 +263,7 @@ export function HeroCentered({
           <h1
             className="display-xl mt-6 mb-6 animate-fade-in-up animate-delay-100"
           >
-            {renderHeadingWithHighlight(heading, gradientText)}
+            {renderHeadingWithHighlight(heading, highlightText)}
           </h1>
 
           <p
@@ -379,7 +376,7 @@ export function HeroSplit({
   imagePosition = "right",
 }: HeroSplitProps) {
   // Map Sanity fields
-  const gradientText = headingGradientText || headingHighlight;
+  const highlightText = headingGradientText || headingHighlight;
 
   // Map buttons - support both array and individual buttons
   let primary = primaryCTA || (primaryButton?.text ? {
@@ -411,12 +408,10 @@ export function HeroSplit({
   const imageOnLeft = imagePosition === "left";
 
   return (
-    <section className="section min-h-screen flex items-center relative overflow-hidden">
-      {/* Background */}
-      <div className="hero-background">
-        <div className="grid-overlay" />
-        <div className="noise-overlay" />
-      </div>
+    <section className="section min-h-screen flex items-center relative overflow-hidden bg-[var(--background-cream)]">
+      {/* Subtle grain texture overlay - MAISON signature */}
+      <div className="absolute inset-0 opacity-[0.015] pointer-events-none"
+           style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")" }} />
 
       <div className="container">
         <div className={`grid lg:grid-cols-2 gap-12 lg:gap-16 items-center ${imageOnLeft ? "lg:flex-row-reverse" : ""}`}>
@@ -433,7 +428,7 @@ export function HeroSplit({
             <h1
               className="display-lg mt-6 mb-6 animate-fade-in-up animate-delay-100"
             >
-              {renderHeadingWithHighlight(heading, gradientText)}
+              {renderHeadingWithHighlight(heading, highlightText)}
             </h1>
 
             <p
@@ -448,7 +443,7 @@ export function HeroSplit({
               >
                 {features.map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--gradient-primary-soft)] flex items-center justify-center text-[var(--accent-violet)] mt-0.5">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--gold-light)] flex items-center justify-center text-[var(--gold-dark)] mt-0.5">
                       {feature.icon || <CheckIcon className="w-3.5 h-3.5" />}
                     </span>
                     <span className="text-[var(--foreground)] text-lg">
@@ -490,7 +485,7 @@ export function HeroSplit({
             <div
               className={`relative animate-fade-in-up animate-delay-200 ${imageOnLeft ? "lg:order-1" : ""}`}
             >
-              <div className="relative rounded-2xl overflow-hidden border border-[var(--border)] glow-cyan">
+              <div className="relative overflow-hidden border border-[var(--border-hairline)]">
                 <Image
                   src={image.src || (image.asset?.url) || ""}
                   alt={image.alt || ""}
@@ -500,11 +495,6 @@ export function HeroSplit({
                   priority
                 />
               </div>
-              {/* Decorative gradient orb behind image */}
-              <div
-                className="absolute -z-10 w-[120%] h-[120%] -top-[10%] -left-[10%] rounded-full blur-[120px] opacity-20"
-                style={{ background: "var(--gradient-primary)" }}
-              />
             </div>
           )}
         </div>
@@ -561,7 +551,7 @@ export function HeroVideo({
   overlayOpacity = 0.6,
 }: HeroVideoProps) {
   // Map Sanity fields
-  const gradientText = headingGradientText || headingHighlight;
+  const highlightText = headingGradientText || headingHighlight;
 
   // Map video fields
   const videoSrc = video?.src || videoUrl || "";
@@ -586,9 +576,9 @@ export function HeroVideo({
     secondary = mappedButtons[1];
   }
   return (
-    <section className="hero">
+    <section className="hero relative">
       {/* Video Background */}
-      <div className="hero-background">
+      <div className="absolute inset-0">
         {videoSrc && (
           <video
             className="absolute inset-0 w-full h-full object-cover"
@@ -600,35 +590,37 @@ export function HeroVideo({
             playsInline
           />
         )}
-        {/* Dark Overlay */}
+        {/* Dark Overlay - MAISON elegant dark layer */}
         {showOverlay && (
           <div
-            className="absolute inset-0 bg-black"
+            className="absolute inset-0 bg-[var(--foreground)]"
             style={{ opacity: overlayOpacity }}
           />
         )}
-        <div className="noise-overlay" />
+        {/* Subtle grain texture overlay */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+             style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")" }} />
       </div>
 
       {/* Content */}
-      <div className="container relative z-10">
+      <div className="container relative z-10 theme-on-dark">
         <div className="max-w-4xl mx-auto text-center">
           {badge && (
             <div className="animate-fade-in flex justify-center">
-              <Badge variant={badge.variant || "gradient"}>
+              <Badge variant={badge.variant || "default"}>
                 {badge.text}
               </Badge>
             </div>
           )}
 
           <h1
-            className="display-xl mt-6 mb-6 animate-fade-in-up animate-delay-100"
+            className="display-xl mt-6 mb-6 animate-fade-in-up animate-delay-100 text-[var(--background)]"
           >
-            {renderHeadingWithHighlight(heading, gradientText)}
+            {renderHeadingWithHighlight(heading, highlightText)}
           </h1>
 
           <p
-            className="body-lg max-w-2xl mx-auto mb-10 animate-fade-in-up animate-delay-200"
+            className="body-lg max-w-2xl mx-auto mb-10 animate-fade-in-up animate-delay-200 text-[var(--background)]/80"
           >
             {subheading}
           </p>
@@ -637,24 +629,34 @@ export function HeroVideo({
             className="flex flex-wrap gap-4 justify-center animate-fade-in-up animate-delay-300"
           >
             {primary && (
-              <Button
-                variant={primary.variant || "primary"}
-                size="lg"
-                onClick={primary.onClick}
-                rightIcon={primary.icon || <ArrowRightIcon className="w-4 h-4" />}
+              <a
+                href={primary.href || "#"}
+                className="btn btn-white btn-lg"
+                onClick={(e) => {
+                  if (primary.onClick) {
+                    e.preventDefault();
+                    primary.onClick();
+                  }
+                }}
               >
                 {primary.label}
-              </Button>
+                <ArrowRightIcon className="w-4 h-4" />
+              </a>
             )}
             {secondary && (
-              <Button
-                variant={secondary.variant || "secondary"}
-                size="lg"
-                onClick={secondary.onClick}
-                leftIcon={secondary.icon || <PlayIcon className="w-4 h-4" />}
+              <a
+                href={secondary.href || "#"}
+                className="btn btn-lg border border-[var(--background)]/30 text-[var(--background)] hover:bg-[var(--background)]/10"
+                onClick={(e) => {
+                  if (secondary.onClick) {
+                    e.preventDefault();
+                    secondary.onClick();
+                  }
+                }}
               >
+                <PlayIcon className="w-4 h-4" />
                 {secondary.label}
-              </Button>
+              </a>
             )}
           </div>
         </div>
@@ -697,7 +699,7 @@ export function HeroMinimal({
   showBackground = true,
 }: HeroMinimalProps) {
   // Map Sanity fields
-  const gradientText = headingGradientText || headingHighlight;
+  const highlightText = headingGradientText || headingHighlight;
 
   // Map CTA button
   const ctaButton = cta || (singleButton?.text ? {
@@ -713,13 +715,11 @@ export function HeroMinimal({
         : announcement.link)
     : undefined;
   return (
-    <section className="hero">
-      {/* Minimal Background */}
+    <section className="hero bg-[var(--background)]">
+      {/* Subtle grain texture overlay - MAISON signature */}
       {showBackground && (
-        <div className="hero-background">
-          <div className="grid-overlay" style={{ opacity: 0.3 }} />
-          <div className="noise-overlay" />
-        </div>
+        <div className="absolute inset-0 opacity-[0.015] pointer-events-none"
+             style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")" }} />
       )}
 
       {/* Content */}
@@ -729,16 +729,16 @@ export function HeroMinimal({
             <div
               className="animate-fade-in flex justify-center mb-8"
             >
-              <div className="glass-card px-6 py-3 inline-flex items-center gap-3">
+              <div className="px-6 py-3 inline-flex items-center gap-3 border border-[var(--border-hairline)] bg-[var(--background-paper)]">
                 <span className="text-sm text-[var(--foreground-muted)]">
                   {announcement.text}
                 </span>
                 {announcementLink && (
                   <>
-                    <span className="w-px h-4 bg-[var(--border)]" />
+                    <span className="w-px h-4 bg-[var(--border-light)]" />
                     <a
                       href={announcementLink.href}
-                      className="text-sm font-medium text-[var(--accent-cyan)] hover:text-[var(--accent-violet)] transition-colors inline-flex items-center gap-1"
+                      className="text-sm font-medium text-[var(--gold)] hover:text-[var(--gold-dark)] transition-colors inline-flex items-center gap-1"
                     >
                       {announcementLink.label}
                       <ArrowRightIcon className="w-3 h-3" />
@@ -752,7 +752,7 @@ export function HeroMinimal({
           <h1
             className="display-xl mb-6 animate-fade-in-up animate-delay-100"
           >
-            {renderHeadingWithHighlight(heading, gradientText)}
+            {renderHeadingWithHighlight(heading, highlightText)}
           </h1>
 
           <p

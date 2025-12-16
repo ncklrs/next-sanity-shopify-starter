@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { User } from "lucide-react";
 import { Button, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui";
-import { MenuIcon, XIcon, AuroraLogo, ChevronDownIcon, ChevronUpIcon, ArrowRightIcon } from "@/components/icons";
+import { MenuIcon, XIcon, MaisonLogo, ChevronDownIcon, ChevronUpIcon, ArrowRightIcon } from "@/components/icons";
 import { CartButton } from "@/components/CartButton";
 import { CartDrawer } from "@/components/CartDrawer";
 import { useCart } from "@/contexts/CartContext";
@@ -386,7 +386,7 @@ export function Navigation({ settings }: NavigationProps) {
               height={32}
             />
           ) : (
-            <AuroraLogo />
+            <MaisonLogo />
           )}
         </Link>
 

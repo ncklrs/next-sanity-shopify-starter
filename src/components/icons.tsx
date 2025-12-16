@@ -856,18 +856,16 @@ export function ClockIcon(props: IconProps) {
   );
 }
 
-// Logo component
-export function AuroraLogo({ className = "" }: { className?: string }) {
+// Logo component - MAISON editorial luxury branding
+export function MaisonLogo({ className = "" }: { className?: string }) {
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <div className="relative w-8 h-8">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-cyan)] via-[var(--accent-violet)] to-[var(--accent-rose)] rounded-lg rotate-12 opacity-80" />
-        <div className="absolute inset-0.5 bg-[var(--background)] rounded-lg rotate-12" />
-        <div className="absolute inset-1 bg-gradient-to-br from-[var(--accent-cyan)] via-[var(--accent-violet)] to-[var(--accent-rose)] rounded-md rotate-12" />
-      </div>
-      <span className="text-xl font-bold tracking-tight" style={{ fontFamily: "var(--font-satoshi)" }}>
-        Aurora
+    <div className={`flex items-center ${className}`}>
+      <span className="text-xl font-light tracking-[0.3em] uppercase text-[var(--foreground)]">
+        MAISON
       </span>
     </div>
   );
 }
+
+// Legacy alias for backwards compatibility
+export const AuroraLogo = MaisonLogo;

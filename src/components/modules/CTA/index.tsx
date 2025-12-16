@@ -55,10 +55,11 @@ export function CTADefault({
       return <h2 className="display-lg mb-6">{heading}</h2>;
     }
 
+    // Use gold accent for highlighted text - MAISON luxury aesthetic
     return (
       <h2 className="display-lg mb-6">
         {parts[0]}
-        <span className="text-gradient">{headingGradient}</span>
+        <span className="text-[var(--gold)]">{headingGradient}</span>
         {parts[1]}
       </h2>
     );
@@ -326,7 +327,7 @@ export function CTASplit({
   );
 
   const ImageSection = () => (
-    <div className="relative overflow-hidden rounded-2xl">
+    <div className="relative overflow-hidden">
       <img
         src={image.src}
         alt={image.alt}
@@ -334,10 +335,7 @@ export function CTASplit({
       />
       {imageOverlay && (
         <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(139, 92, 246, 0.2) 50%, rgba(236, 72, 153, 0.2) 100%)",
-          }}
+          className="absolute inset-0 bg-[var(--foreground)] opacity-10"
         />
       )}
     </div>
@@ -419,13 +417,13 @@ export function CTABanner({
   const getBackgroundClass = () => {
     switch (background) {
       case "gradient":
-        return "bg-gradient";
+        return "bg-[var(--foreground)]"; // MAISON dark elegant
       case "solid":
-        return "bg-[var(--surface)]";
+        return "bg-[var(--foreground)]";
       case "image":
         return "";
       default:
-        return "bg-gradient";
+        return "bg-[var(--foreground)]";
     }
   };
 
@@ -436,16 +434,16 @@ export function CTABanner({
     >
       {background === "image" && overlay && (
         <div
-          className="absolute inset-0"
-          style={{
-            background: "linear-gradient(135deg, rgba(6, 182, 212, 0.9) 0%, rgba(139, 92, 246, 0.9) 50%, rgba(236, 72, 153, 0.9) 100%)",
-          }}
+          className="absolute inset-0 bg-[var(--foreground)] opacity-80"
         />
       )}
+      {/* Subtle grain texture overlay */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+           style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")" }} />
 
       <div className="container relative z-10">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-8 md:py-12">
-          <h2 className="heading-lg text-center md:text-left text-white flex-1">
+          <h2 className="heading-lg text-center md:text-left text-[var(--background)] flex-1">
             {displayHeading}
           </h2>
 
@@ -460,8 +458,8 @@ export function CTABanner({
                       : displayButton.variant === "ghost"
                       ? "btn-ghost"
                       : displayButton.variant === "outline"
-                      ? "border-2 border-white bg-transparent text-white hover:bg-white hover:text-[var(--accent-violet)]"
-                      : "bg-white text-[var(--accent-violet)] hover:shadow-lg"
+                      ? "border border-[var(--background)] bg-transparent text-[var(--background)] hover:bg-[var(--background)] hover:text-[var(--foreground)]"
+                      : "btn-white"
                   } ${
                     displayButton.size === "lg"
                       ? "btn-lg"
@@ -477,7 +475,7 @@ export function CTABanner({
                   variant={displayButton.variant || "primary"}
                   size={displayButton.size || "md"}
                   onClick={displayButton.onClick}
-                  className="bg-white text-[var(--accent-violet)] hover:shadow-lg"
+                  className="btn-white"
                 >
                   {displayButton.label}
                 </Button>

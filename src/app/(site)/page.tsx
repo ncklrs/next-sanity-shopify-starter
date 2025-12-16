@@ -11,16 +11,16 @@ const isPlaceholder = () =>
 export async function generateMetadata() {
   if (isPlaceholder()) {
     return {
-      title: "Aurora - Modern SaaS Platform",
-      description: "The next-generation platform for building exceptional digital experiences",
+      title: "MAISON - Curated Luxury",
+      description: "Discover exceptional pieces curated for the discerning eye",
     };
   }
 
   const page = await getHomepage();
 
   return {
-    title: page?.seo?.title || page?.title || "Aurora - Modern SaaS Platform",
-    description: page?.seo?.description || "The next-generation platform for building exceptional digital experiences",
+    title: page?.seo?.title || page?.title || "MAISON - Curated Luxury",
+    description: page?.seo?.description || "Discover exceptional pieces curated for the discerning eye",
   };
 }
 
@@ -41,7 +41,7 @@ export default async function Home() {
         <main className="min-h-screen flex items-center justify-center">
           <div className="text-center max-w-lg mx-auto px-4">
             <h1 className="display-lg mb-4">
-              Welcome to <span className="text-gradient">Aurora</span>
+              Welcome to <span className="text-gradient">MAISON</span>
             </h1>
             <p className="body-lg mb-8">
               No homepage has been configured yet. Go to the Sanity Studio to:

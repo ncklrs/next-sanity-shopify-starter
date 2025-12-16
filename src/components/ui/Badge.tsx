@@ -12,21 +12,23 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 
 const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
   ({ variant = "default", children, dot = false, className = "", ...props }, ref) => {
+    // MAISON luxury badge styles - minimal, refined
     const variantStyles: Record<BadgeVariant, string> = {
       default: "badge",
-      gradient: "badge badge-gradient",
-      success: "badge badge-success",
+      gradient: "badge badge-exclusive", // Gold outline - luxury accent
+      success: "badge badge-limited", // Gold filled
       new: "badge badge-new",
-      warning: "badge badge-warning",
-      error: "badge badge-error",
+      warning: "badge bg-[var(--warning)] text-[var(--background-paper)]",
+      error: "badge bg-[var(--error)] text-[var(--background-paper)]",
     };
 
+    // MAISON dot colors - gold, foreground, semantic
     const dotColors: Record<BadgeVariant, string> = {
       default: "bg-[var(--foreground-muted)]",
-      gradient: "bg-[var(--accent-violet)]",
-      success: "bg-[var(--accent-emerald)]",
-      new: "bg-[var(--accent-cyan)]",
-      warning: "bg-[var(--accent-amber)]",
+      gradient: "bg-[var(--gold)]",
+      success: "bg-[var(--success)]",
+      new: "bg-[var(--foreground)]",
+      warning: "bg-[var(--warning)]",
       error: "bg-[var(--error)]",
     };
 

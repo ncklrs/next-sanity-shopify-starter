@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AuroraLogo } from "@/components/icons";
+import { MaisonLogo } from "@/components/icons";
 
 interface NavLink {
   label: string;
@@ -109,7 +109,7 @@ export function Footer({ settings }: FooterProps) {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-brand">
-            <AuroraLogo className="mb-4" />
+            <MaisonLogo className="mb-4" />
             <p className="text-[var(--foreground-muted)] mb-6">
               {description || "The modern platform for building exceptional digital experiences."}
             </p>
@@ -162,7 +162,7 @@ export function Footer({ settings }: FooterProps) {
         </div>
 
         <div className="footer-bottom">
-          <p>{copyrightText ? `© ${currentYear} ${copyrightText}` : `© ${currentYear} Aurora. All rights reserved.`}</p>
+          <p>{copyrightText ? `© ${currentYear} ${copyrightText}` : `© ${currentYear} MAISON. All rights reserved.`}</p>
           <div className="flex items-center gap-6">
             {bottomLinks.length > 0 ? (
               bottomLinks.map((link, index) => (

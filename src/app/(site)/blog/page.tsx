@@ -5,8 +5,8 @@ import { getAllPosts, getEngagementsForBlog } from "../../../../sanity/queries";
 import { GlobalEngagement } from "@/components/GlobalEngagement";
 
 export const metadata = {
-  title: "Blog | Aurora",
-  description: "Latest articles and insights from the Aurora team",
+  title: "Blog | MAISON",
+  description: "Latest articles and insights from the MAISON editorial team",
 };
 
 export default async function BlogPage() {
