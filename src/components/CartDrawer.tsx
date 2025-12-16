@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
 import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui";
@@ -40,38 +40,29 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  // Focus trap
-  const handleBackdropClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget) {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
   if (!isOpen) return null;
 
   return (
     <div
       className="fixed inset-0 z-[200] flex items-start justify-end"
-      onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby="cart-title"
     >
-      {/* Backdrop */}
+      {/* Backdrop - clickable to close */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 cursor-pointer"
+        onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Drawer */}
+      {/* Drawer - stop propagation to prevent backdrop click */}
       <div
         className="relative h-full w-full max-w-md bg-[var(--background)] shadow-2xl transform transition-transform duration-300 ease-out flex flex-col"
         style={{
           animation: "slideInFromRight 300ms ease-out",
         }}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
