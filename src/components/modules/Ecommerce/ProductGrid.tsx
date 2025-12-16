@@ -77,24 +77,26 @@ function ProductCard({ product, onAddToCart, isPriority = false }: {
   return (
     <div className="group relative bg-[var(--surface)] rounded-2xl border border-[var(--border)] overflow-hidden transition-all duration-300 hover:border-[var(--border-hover)] hover:shadow-2xl hover:-translate-y-1">
       {/* Product Image */}
-      <Link href={productUrl} className="relative aspect-square overflow-hidden block">
-        {product.image ? (
-          <Image
-            src={product.image.src}
-            alt={product.image.alt}
-            width={product.image.width || 600}
-            height={product.image.height || 600}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            priority={isPriority}
-          />
-        ) : (
-          <div className="w-full h-full bg-[var(--surface-elevated)] flex items-center justify-center">
-            <span className="text-[var(--foreground-muted)]">No image</span>
-          </div>
-        )}
+      <div className="relative aspect-square overflow-hidden">
+        <Link href={productUrl} className="block w-full h-full">
+          {product.image ? (
+            <Image
+              src={product.image.src}
+              alt={product.image.alt}
+              width={product.image.width || 600}
+              height={product.image.height || 600}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              priority={isPriority}
+            />
+          ) : (
+            <div className="w-full h-full bg-[var(--surface-elevated)] flex items-center justify-center">
+              <span className="text-[var(--foreground-muted)]">No image</span>
+            </div>
+          )}
+        </Link>
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
+        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10 pointer-events-none">
           {product.badge && (
             <Badge variant="gradient">{product.badge}</Badge>
           )}
@@ -105,16 +107,22 @@ function ProductCard({ product, onAddToCart, isPriority = false }: {
           )}
         </div>
         {hasDiscount && (
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 right-3 z-10 pointer-events-none">
             <Badge variant="success">-{discountPercent}%</Badge>
           </div>
         )}
 
-        {/* Hover Actions */}
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+        {/* Hover Actions Overlay */}
+        <div
+          className="absolute inset-0 z-20 flex items-center justify-center gap-3 transition-all duration-300 ease-out opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto"
+          style={{
+            background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.2) 100%)'
+          }}
+        >
           <Button
             variant="secondary"
             size="sm"
+            className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 ease-out shadow-lg backdrop-blur-sm"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -127,6 +135,7 @@ function ProductCard({ product, onAddToCart, isPriority = false }: {
           <Button
             variant="ghost"
             size="sm"
+            className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 ease-out delay-75 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/20"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -135,7 +144,7 @@ function ProductCard({ product, onAddToCart, isPriority = false }: {
             <HeartIcon className="w-5 h-5" />
           </Button>
         </div>
-      </Link>
+      </div>
 
       {/* Product Details */}
       <div className="p-5">
