@@ -42,6 +42,17 @@ interface ProductVariant {
   selectedOption?: string;
 }
 
+/** Shopify variant data for cart lookup */
+interface ShopifyVariant {
+  id: string;
+  title: string;
+  option1?: string;
+  option2?: string;
+  option3?: string;
+  price?: number;
+  availableForSale?: boolean;
+}
+
 interface TrustBadge {
   icon?: string;
   text: string;
@@ -56,13 +67,19 @@ interface ProductHeroProps {
   rating?: number;
   reviewCount?: number;
   images?: ProductImage[];
+  /** Option groups for UI display (Color, Size, etc.) */
   variants?: ProductVariant[];
+  /** All Shopify variants with their IDs for cart lookup */
+  shopifyVariants?: ShopifyVariant[];
+  /** First variant ID for simple single-variant products */
+  firstVariantId?: string;
   trustBadges?: TrustBadge[];
   inStock?: boolean;
   ctaText?: string;
   spacing?: "sm" | "md" | "lg" | "xl";
   backgroundColor?: string;
-  onAddToCart?: (selectedVariants: Record<string, string>) => void;
+  /** Called with the Shopify variant ID when adding to cart */
+  onAddToCart?: (variantId: string) => void;
 }
 
 export function ProductHero({
@@ -75,6 +92,8 @@ export function ProductHero({
   reviewCount,
   images,
   variants,
+  shopifyVariants,
+  firstVariantId,
   trustBadges,
   inStock = true,
   ctaText = "Add to Cart",
@@ -85,6 +104,7 @@ export function ProductHero({
   // Ensure arrays are never null (handle edge cases from GROQ queries)
   const safeImages = images ?? [];
   const safeVariants = variants ?? [];
+  const safeShopifyVariants = shopifyVariants ?? [];
   const safeTrustBadges = trustBadges ?? [];
 
   const [selectedImage, setSelectedImage] = useState(0);
@@ -100,6 +120,28 @@ export function ProductHero({
     return initial;
   });
 
+  /**
+   * Find the Shopify variant ID based on selected options.
+   * Shopify variants have option1, option2, option3 fields that match the selected values.
+   */
+  const findVariantId = (): string | undefined => {
+    // For single-variant products, use firstVariantId
+    if (safeShopifyVariants.length <= 1) {
+      return firstVariantId;
+    }
+
+    // Get the selected option values in order
+    const selectedValues = safeVariants.map(v => selectedVariants[v.name]).filter(Boolean);
+
+    // Find matching variant
+    const matchingVariant = safeShopifyVariants.find(sv => {
+      const variantOptions = [sv.option1, sv.option2, sv.option3].filter(Boolean);
+      return selectedValues.every((val, idx) => variantOptions[idx] === val);
+    });
+
+    return matchingVariant?.id || firstVariantId;
+  };
+
   const spacingMap = {
     sm: "py-12 px-4",
     md: "py-16 px-6",
@@ -112,8 +154,14 @@ export function ProductHero({
   };
 
   const handleAddToCart = () => {
-    onAddToCart?.(selectedVariants);
+    const variantId = findVariantId();
+    if (variantId) {
+      onAddToCart?.(variantId);
+    }
   };
+
+  // Check if we can add to cart (need a variant ID)
+  const canAddToCart = !!(firstVariantId || safeShopifyVariants.length > 0);
 
   const hasDiscount = compareAtPrice && Number(compareAtPrice) > Number(price);
   const discountPercent = hasDiscount
@@ -274,7 +322,7 @@ export function ProductHero({
                 size="lg"
                 className="flex-1"
                 onClick={handleAddToCart}
-                disabled={!inStock}
+                disabled={!inStock || !canAddToCart}
                 leftIcon={<ShoppingCartIcon className="w-5 h-5" />}
               >
                 {ctaText}

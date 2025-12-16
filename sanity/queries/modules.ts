@@ -1202,11 +1202,24 @@ const productHeroProjection = `{
   "compareAtPrice": product->store.priceRange.maxVariantPrice,
   "description": product->store.description,
   "images": [{ "src": product->store.previewImageUrl, "alt": product->store.title }],
+  // Option groups for UI (Color, Size, etc.)
   "variants": product->store.options[]{
     "id": _key,
     "name": name,
     "options": values
   },
+  // All Shopify variants with their IDs and option values for cart lookup
+  "shopifyVariants": product->store.variants[]->store{
+    "id": gid,
+    "title": title,
+    "option1": option1,
+    "option2": option2,
+    "option3": option3,
+    "price": price,
+    "availableForSale": inventory.isAvailable
+  },
+  // First variant ID for simple single-variant products
+  "firstVariantId": product->store.variants[0]->store.gid,
   "inStock": product->store.status == "active" && !product->store.isDeleted,
   trustBadges[]{ icon, text },
   ctaText,

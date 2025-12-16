@@ -3,6 +3,7 @@
 import { useMemo, useCallback } from "react";
 import { urlFor } from "@/lib/sanity";
 import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/contexts/ToastContext";
 import { ModuleErrorBoundary } from "./ModuleErrorBoundary";
 import { HeroDefault, HeroCentered, HeroSplit, HeroVideo, HeroMinimal } from "./modules/Hero";
 import { FeaturesGrid, FeaturesAlternating, FeaturesIconCards } from "./modules/Features";
@@ -1053,6 +1054,9 @@ const moduleTransformers: Record<string, (data: any) => any> = {
         name: v.name,
         options: v.options || [],
       })),
+    // Pass through Shopify variant data for cart lookup
+    shopifyVariants: data.shopifyVariants || [],
+    firstVariantId: data.firstVariantId,
   }),
 
   productGrid: (data) => ({
@@ -1273,6 +1277,7 @@ interface ModuleRendererProps {
 
 // E-commerce module types that support add to cart functionality
 const ECOMMERCE_MODULES_WITH_CART = new Set([
+  "productHero",
   "productGrid",
   "productCarousel",
   "relatedProducts",
@@ -1280,6 +1285,7 @@ const ECOMMERCE_MODULES_WITH_CART = new Set([
 
 export function ModuleRenderer({ modules }: ModuleRendererProps) {
   const { addItem } = useCart();
+  const { showCartToast, addToast } = useToast();
 
   // Handler for add to cart - receives the Shopify variant ID
   const handleAddToCart = useCallback(
@@ -1290,11 +1296,13 @@ export function ModuleRenderer({ modules }: ModuleRendererProps) {
       }
       try {
         await addItem(variantId, 1);
+        showCartToast("Added to cart");
       } catch (error) {
         console.error("Failed to add item to cart:", error);
+        addToast("Failed to add item to cart", "error");
       }
     },
-    [addItem]
+    [addItem, showCartToast, addToast]
   );
 
   // Memoize transformed modules to prevent re-computation on every render
