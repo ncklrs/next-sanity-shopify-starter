@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity';
+import { IconPickerInput } from '../../components/IconPickerInput';
 
 export const tabs = defineType({
   name: 'tabs',
@@ -34,7 +35,10 @@ export const tabs = defineType({
               name: 'icon',
               title: 'Icon',
               type: 'string',
-              description: 'Icon name (e.g., lucide icon name)',
+              description: 'Select an icon',
+              components: {
+                input: IconPickerInput,
+              },
             }),
             defineField({
               name: 'content',
@@ -261,7 +265,10 @@ export const steps = defineType({
               name: 'icon',
               title: 'Icon',
               type: 'string',
-              description: 'Icon name (e.g., lucide icon name)',
+              description: 'Select an icon',
+              components: {
+                input: IconPickerInput,
+              },
             }),
             defineField({
               name: 'image',

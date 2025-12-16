@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity';
+import { IconPickerInput } from '../../components/IconPickerInput';
 
 export const featuresGrid = defineType({
   name: 'featuresGrid',
@@ -41,7 +42,10 @@ export const featuresGrid = defineType({
               name: 'icon',
               title: 'Icon',
               type: 'string',
-              description: 'Icon name (e.g., lucide icon name)',
+              description: 'Select an icon for this feature',
+              components: {
+                input: IconPickerInput,
+              },
               validation: (Rule) => Rule.required(),
             }),
             defineField({
@@ -287,7 +291,10 @@ export const featuresIconCards = defineType({
               name: 'icon',
               title: 'Icon',
               type: 'string',
-              description: 'Icon name (e.g., lucide icon name)',
+              description: 'Select an icon for this feature',
+              components: {
+                input: IconPickerInput,
+              },
               validation: (Rule) => Rule.required(),
             }),
             defineField({

@@ -1,5 +1,6 @@
 import { defineField, defineType } from 'sanity';
 import ModulePickerInput from '../../components/ModulePickerInput';
+import { IconPickerInput } from '../../components/IconPickerInput';
 
 export const spacer = defineType({
   name: 'spacer',
@@ -141,7 +142,10 @@ export const banner = defineType({
       name: 'icon',
       title: 'Icon',
       type: 'string',
-      description: 'Icon name (e.g., lucide icon name) or emoji',
+      description: 'Select an icon',
+      components: {
+        input: IconPickerInput,
+      },
     }),
     defineField({
       name: 'link',

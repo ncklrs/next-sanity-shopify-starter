@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { IconPickerInput } from "../../components/IconPickerInput";
 
 export const button = defineType({
   name: "button",
@@ -117,7 +118,10 @@ export const button = defineType({
       name: "icon",
       title: "Icon",
       type: "string",
-      description: "Optional icon name (e.g., arrow-right, download)",
+      description: "Optional icon for this button",
+      components: {
+        input: IconPickerInput,
+      },
     }),
   ],
   preview: {

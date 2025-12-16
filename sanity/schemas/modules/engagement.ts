@@ -1,4 +1,5 @@
 import { defineField, defineType, defineArrayMember } from 'sanity';
+import { IconPickerInput } from '../../components/IconPickerInput';
 
 // Announcement Bar - Top page banner
 export const announcementBar = defineType({
@@ -38,7 +39,10 @@ export const announcementBar = defineType({
       name: 'icon',
       title: 'Icon',
       type: 'string',
-      description: 'Icon name or emoji to display',
+      description: 'Select an icon',
+      components: {
+        input: IconPickerInput,
+      },
     }),
     defineField({
       name: 'dismissible',
@@ -223,7 +227,10 @@ export const stickyCta = defineType({
       name: 'icon',
       title: 'Icon',
       type: 'string',
-      description: 'Icon name or emoji to display',
+      description: 'Select an icon',
+      components: {
+        input: IconPickerInput,
+      },
     }),
     defineField({
       name: 'position',

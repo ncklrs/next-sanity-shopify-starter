@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { IconPickerInput } from "../../components/IconPickerInput";
 
 // Base nav link fields (without children - used for nested items)
 const baseNavLinkFields = [
@@ -87,7 +88,10 @@ const baseNavLinkFields = [
     name: "icon",
     title: "Icon",
     type: "string",
-    description: "Optional icon name (e.g., 'rocket', 'shield', 'chart')",
+    description: "Optional icon for this nav item",
+    components: {
+      input: IconPickerInput,
+    },
   },
 ];
 

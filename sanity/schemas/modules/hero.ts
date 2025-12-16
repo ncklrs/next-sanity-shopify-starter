@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { IconPickerInput } from "../../components/IconPickerInput";
 
 export const heroDefault = defineType({
   name: "heroDefault",
@@ -311,7 +312,10 @@ export const heroSplit = defineType({
               name: "icon",
               title: "Icon",
               type: "string",
-              description: "Icon name or emoji",
+              description: "Select an icon for this feature",
+              components: {
+                input: IconPickerInput,
+              },
             }),
             defineField({
               name: "text",

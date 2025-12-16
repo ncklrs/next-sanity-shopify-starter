@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { IconPickerInput } from "../../components/IconPickerInput";
 
 // Shared spacing and backgroundColor fields
 const spacingField = defineField({
@@ -84,7 +85,7 @@ export const productHero = defineType({
         {
           type: "object",
           fields: [
-            defineField({ name: "icon", title: "Icon", type: "string" }),
+            defineField({ name: "icon", title: "Icon", type: "string", components: { input: IconPickerInput } }),
             defineField({ name: "text", title: "Text", type: "string" }),
           ],
         },
@@ -393,7 +394,7 @@ export const featuredProduct = defineType({
         {
           type: "object",
           fields: [
-            defineField({ name: "icon", title: "Icon", type: "string" }),
+            defineField({ name: "icon", title: "Icon", type: "string", components: { input: IconPickerInput } }),
             defineField({ name: "text", title: "Text", type: "string" }),
           ],
         },
@@ -679,7 +680,7 @@ export const trustBadges = defineType({
         {
           type: "object",
           fields: [
-            defineField({ name: "icon", title: "Icon", type: "string" }),
+            defineField({ name: "icon", title: "Icon", type: "string", components: { input: IconPickerInput } }),
             defineField({ name: "text", title: "Text", type: "string", validation: (Rule) => Rule.required() }),
             defineField({ name: "description", title: "Description", type: "string" }),
           ],
