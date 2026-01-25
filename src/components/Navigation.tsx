@@ -11,6 +11,8 @@ import { CartButton } from "@/components/CartButton";
 import { CartDrawer } from "@/components/CartDrawer";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { AIHeaderTrigger } from "@/components/ai";
+import { useAICommerce } from "@/contexts/AICommerceContext";
 import { urlFor } from "@/lib/sanity";
 
 const BUTTON_VARIANT_CLASSES: Record<string, string> = {
@@ -316,14 +318,23 @@ export function Navigation({ settings }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+  const [navMenuValue, setNavMenuValue] = useState("");
   const pathname = usePathname();
   const { totalQuantity } = useCart();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isOpen: aiSheetOpen } = useAICommerce();
 
   useEffect(() => {
     setMobileMenuOpen(false);
     setExpandedItems(new Set());
   }, [pathname]);
+
+  // Close nav dropdowns when AI sheet opens
+  useEffect(() => {
+    if (aiSheetOpen) {
+      setNavMenuValue("");
+    }
+  }, [aiSheetOpen]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -392,10 +403,10 @@ export function Navigation({ settings }: NavigationProps) {
 
         {/* Desktop Navigation + CTA + Cart */}
         <div className="nav-show-desktop items-center gap-8">
-          <NavigationMenu>
+          <NavigationMenu value={navMenuValue} onValueChange={setNavMenuValue}>
             <NavigationMenuList>
               {navItems.map((item, index) => (
-                <NavigationMenuItem key={index}>
+                <NavigationMenuItem key={index} value={item.label}>
                   {hasDropdown(item) ? (
                     <>
                       <NavigationMenuTrigger className="nav-link">
@@ -442,6 +453,9 @@ export function Navigation({ settings }: NavigationProps) {
             </div>
           )}
 
+          {/* AI Shopping Assistant Trigger */}
+          <AIHeaderTrigger />
+
           {/* Account/Login Button */}
           <Link
             href={isAuthenticated ? "/account" : "/account/login"}
@@ -461,8 +475,9 @@ export function Navigation({ settings }: NavigationProps) {
           )}
         </div>
 
-        {/* Mobile Cart + Account + Menu Buttons */}
+        {/* Mobile Cart + AI + Account + Menu Buttons */}
         <div className="nav-show-mobile items-center gap-2">
+          <AIHeaderTrigger />
           <Link
             href={isAuthenticated ? "/account" : "/account/login"}
             className="p-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)]"

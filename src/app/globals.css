@@ -2819,3 +2819,50 @@ a {
     }
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   AI COMMERCE SHEET - Push Layout Behavior
+   Main content RESIZES when sheet opens (true push layout)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Prevent horizontal overflow when sheet is open */
+html[data-sheet-open="true"] {
+  overflow-x: hidden;
+}
+
+html[data-sheet-open="true"] body {
+  overflow-x: hidden;
+}
+
+/* Main content wrapper - smooth resize transition */
+#main-content {
+  transition: margin-right var(--duration-normal) var(--ease-out-expo);
+}
+
+/* Fixed nav also needs to shrink when sheet is open */
+.nav {
+  transition: right var(--duration-normal) var(--ease-out-expo);
+}
+
+/* Desktop: Content AND nav resize to fit remaining space */
+@media (min-width: 640px) {
+  html[data-sheet-open="true"] #main-content {
+    margin-right: 420px;
+  }
+
+  html[data-sheet-open="true"] .nav {
+    right: 420px;
+  }
+}
+
+/* Mobile: Full width overlay, no resize */
+@media (max-width: 639px) {
+  html[data-sheet-open="true"] #main-content {
+    margin-right: 0;
+  }
+}
+
+/* Ensure sheet is above absolutely everything */
+[data-radix-dialog-content] {
+  z-index: 9999 !important;
+}
