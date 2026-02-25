@@ -43,7 +43,7 @@ A production-ready [Next.js 16](https://nextjs.org) e-commerce template combinin
 ### 1. Clone and Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/next-sanity-shopify-starter.git
+git clone https://github.com/ncklrs/next-sanity-shopify-starter.git
 cd next-sanity-shopify-starter
 
 # Install dependencies
